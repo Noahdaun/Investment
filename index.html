@@ -381,6 +381,66 @@
     margin-top: 34px; font-size: 0.76rem; color: var(--ink-muted); border-top: 1px solid var(--border);
     padding-top: 14px;
   }
+
+  /* ===== 실행 기록 (ac) ===== */
+  #view-ac .wrap { max-width: 820px; margin: 0 auto; padding: 26px 20px 90px; }
+  #view-ac header.top {
+    margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  #view-ac header.top h1 { font-size: 1.6rem; margin: 0 0 6px; font-weight: 600; }
+  #view-ac header.top .sub { color: var(--ink-muted); font-size: 0.88rem; }
+
+  #view-ac .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+  @media (max-width: 700px) { #view-ac .stats { grid-template-columns: 1fr; } }
+  #view-ac .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; box-shadow: var(--shadow); }
+  #view-ac .stat .label { font-size: 0.7rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  #view-ac .stat .value { font-size: 1.3rem; margin-top: 4px; font-weight: 600; }
+
+  #view-ac section { margin-bottom: 26px; }
+  #view-ac section > h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 12px; }
+  #view-ac .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; }
+  #view-ac .empty { color: var(--ink-muted); font-size: 0.85rem; padding: 10px 4px; }
+
+  #view-ac .ac-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  #view-ac .ac-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px;
+    border: 1px solid var(--border); background: var(--surface-2); flex-wrap: wrap;
+  }
+  #view-ac .ac-item .ac-date { font-size: 0.76rem; color: var(--ink-muted); flex: none; width: 82px; }
+  #view-ac .ac-item .ac-desc { font-weight: 600; font-size: 0.9rem; flex: 1 1 160px; min-width: 0; }
+  #view-ac .ac-item .ac-note { font-size: 0.78rem; color: var(--ink-muted); flex-basis: 100%; }
+  #view-ac .ac-item .ac-amount { font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent); }
+  #view-ac .ac-item .ac-del { background: none; border: none; color: var(--ink-muted); cursor: pointer; font-size: 0.9rem; }
+  #view-ac .ac-item .ac-del:hover { color: var(--loss); }
+
+  #view-ac .ac-form, #view-ac .ac-calc-form {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;
+    padding-top: 14px; border-top: 1px dashed var(--border);
+  }
+  #view-ac .ac-form label, #view-ac .ac-calc-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--ink-muted); }
+  #view-ac .ac-form label.full { grid-column: 1 / -1; }
+  #view-ac .ac-form input, #view-ac .ac-calc-form input {
+    font: inherit; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--ink);
+  }
+  #view-ac .ac-form button, #view-ac .ac-calc-form button {
+    grid-column: 1 / -1; justify-self: end; font: inherit; cursor: pointer; border-radius: 7px;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--surface); padding: 8px 16px; font-size: 0.85rem;
+  }
+
+  #view-ac .ac-result {
+    margin-top: 16px; padding: 14px 16px; border-radius: 10px; background: var(--surface-2);
+    border: 1px solid var(--border); font-size: 0.88rem; display: none;
+  }
+  #view-ac .ac-result.show { display: block; }
+  #view-ac .ac-result .big { font-size: 1.5rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  #view-ac .ac-result .breakdown { margin-top: 10px; display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.82rem; color: var(--ink-muted); }
+  #view-ac .ac-result .breakdown b { color: var(--ink); }
+
+  #view-ac footer.note {
+    margin-top: 34px; font-size: 0.76rem; color: var(--ink-muted); border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
 </style>
 
 <div class="hub-tabs">
@@ -388,6 +448,7 @@
     <button class="tab active" data-view="kn">📚 지식 정리</button>
     <button class="tab" data-view="pf">📒 포트폴리오 (주식)</button>
     <button class="tab" data-view="pl">🚀 파이프라인</button>
+    <button class="tab" data-view="ac">✅ 실행 기록</button>
   </div>
   <div class="backup-group">
     <span class="sync-badge" id="syncIndicator"><span class="dot"></span><span class="label">연결 중…</span></span>
@@ -1045,6 +1106,56 @@
   </div>
 </div>
 
+<!-- ============ 실행 기록 ============ -->
+<div class="view" id="view-ac">
+  <div class="wrap">
+    <header class="top">
+      <h1 class="serif">실행 기록</h1>
+      <div class="sub">실제로 매수·저축·실행한 것을 기록하고, 이 페이스를 계속 유지했을 때 예상되는 최종 금액을 계산합니다.</div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><div class="label">실행 횟수</div><div class="value num" id="acStatCount">0</div></div>
+      <div class="stat"><div class="label">누적 실행 금액</div><div class="value num" id="acStatTotal">₩0</div></div>
+      <div class="stat"><div class="label">최근 실행일</div><div class="value" id="acStatLast" style="font-size:1.1rem;">—</div></div>
+    </div>
+
+    <section>
+      <h2 class="serif">실행 기록</h2>
+      <div class="card">
+        <div class="ac-list" id="acList"></div>
+        <div class="empty" id="acEmpty">아직 기록이 없습니다. 아래에서 첫 실행을 기록해보세요.</div>
+        <div class="ac-form">
+          <label>날짜 <input type="date" id="acDate" /></label>
+          <label>무엇을 했나요 <input id="acDesc" placeholder="예: 코덱스 S&amp;P500 매수" /></label>
+          <label>금액 <input type="number" id="acAmount" placeholder="300000" /></label>
+          <label class="full">메모(선택) <input id="acNote" placeholder="왜 했는지, 느낀 점 등" /></label>
+          <button id="acBtnAdd">기록 추가</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="serif">예상 수익 계산기</h2>
+      <div class="card">
+        <div class="sub" style="color:var(--ink-muted); font-size:0.82rem; margin-bottom:4px;">지금 페이스(월 납입액)를 예상 수익률로 꾸준히 유지했을 때 최종적으로 얼마가 되는지 복리로 계산합니다.</div>
+        <div class="ac-calc-form">
+          <label>현재까지 모은 금액 <input type="number" id="acCurAmount" placeholder="0" /></label>
+          <label>월 납입 예정액 <input type="number" id="acMonthly" placeholder="300000" /></label>
+          <label>예상 연 수익률(%) <input type="number" id="acRate" placeholder="10" step="0.1" /></label>
+          <label>투자 기간(년) <input type="number" id="acYears" placeholder="20" /></label>
+          <button id="acBtnCalc">계산하기</button>
+        </div>
+        <div class="ac-result" id="acResult"></div>
+      </div>
+    </section>
+
+    <footer class="note">
+      복리 계산은 입력하신 수익률로 시뮬레이션한 예상치일 뿐, 실제 수익을 보장하지 않습니다. 다른 기기와 자동으로 동기화됩니다.
+    </footer>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1060,7 +1171,7 @@ function toast(msg) {
 /* ===================== 클라우드 동기화 (Supabase) ===================== */
 const SUPABASE_URL = "https://ckecoqxwoofdwowvexce.supabase.co";
 const SUPABASE_KEY = "sb_publishable_R8mNY01F0WNzeCvKuPF4EQ_9FD7D5Fm";
-const CLOUD_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1"];
+const CLOUD_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1", "action_log_v1"];
 
 async function cloudGet(id) {
   try {
@@ -1607,6 +1718,153 @@ function initPortfolio() {
   render();
 }
 
+/* ===================== 실행 기록 ===================== */
+function initActions() {
+  const btnAdd = document.getElementById("acBtnAdd");
+  if (!btnAdd) return;
+
+  const KEY = "action_log_v1";
+  const won = n => "₩" + Math.round(n).toLocaleString("ko-KR");
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  let state = load();
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          actions: parsed.actions || [],
+          calc: Object.assign({ curAmount: 0, monthly: 300000, rate: 10, years: 20 }, parsed.calc || {}),
+        };
+      }
+    } catch (e) {}
+    return { actions: [], calc: { curAmount: 0, monthly: 300000, rate: 10, years: 20 } };
+  }
+
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(state));
+    cloudSaveKey(KEY);
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function render() {
+    renderStats();
+    renderList();
+    document.getElementById("acCurAmount").value = state.calc.curAmount || "";
+    document.getElementById("acMonthly").value = state.calc.monthly || "";
+    document.getElementById("acRate").value = state.calc.rate || "";
+    document.getElementById("acYears").value = state.calc.years || "";
+  }
+
+  function renderStats() {
+    const total = state.actions.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+    const last = state.actions.length
+      ? [...state.actions].sort((a, b) => (a.date < b.date ? 1 : -1))[0].date
+      : null;
+    document.getElementById("acStatCount").textContent = state.actions.length;
+    document.getElementById("acStatTotal").textContent = won(total);
+    document.getElementById("acStatLast").textContent = last ? last : "—";
+  }
+
+  function renderList() {
+    const list = document.getElementById("acList");
+    const empty = document.getElementById("acEmpty");
+    list.innerHTML = "";
+    const sorted = [...state.actions].sort((a, b) => (a.date < b.date ? 1 : -1));
+    empty.style.display = sorted.length ? "none" : "block";
+    sorted.forEach(a => {
+      const div = document.createElement("div");
+      div.className = "ac-item";
+      div.innerHTML = `
+        <span class="ac-date num">${escapeHtml(a.date || "")}</span>
+        <span class="ac-desc">${escapeHtml(a.desc)}</span>
+        <span class="ac-amount">${won(a.amount)}</span>
+        <button class="ac-del" data-id="${a.id}" title="삭제">✕</button>
+        ${a.note ? `<span class="ac-note">${escapeHtml(a.note)}</span>` : ""}
+      `;
+      list.appendChild(div);
+    });
+    list.querySelectorAll(".ac-del").forEach(b => {
+      b.addEventListener("click", () => {
+        state.actions = state.actions.filter(a => a.id !== b.dataset.id);
+        save();
+        render();
+      });
+    });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const dateInput = document.getElementById("acDate");
+  if (!dateInput.value) dateInput.value = today;
+
+  btnAdd.addEventListener("click", () => {
+    const desc = document.getElementById("acDesc").value.trim();
+    const amount = Number(document.getElementById("acAmount").value);
+    if (!desc || !amount) {
+      toast("무엇을 했는지와 금액은 필수입니다.");
+      return;
+    }
+    state.actions.push({
+      id: uid(),
+      date: document.getElementById("acDate").value || today,
+      desc,
+      amount,
+      note: document.getElementById("acNote").value.trim(),
+    });
+    document.getElementById("acDesc").value = "";
+    document.getElementById("acAmount").value = "";
+    document.getElementById("acNote").value = "";
+    document.getElementById("acDate").value = today;
+    save();
+    render();
+    toast("실행 기록이 저장되었습니다");
+  });
+
+  document.getElementById("acBtnCalc").addEventListener("click", () => {
+    const curAmount = Number(document.getElementById("acCurAmount").value) || 0;
+    const monthly = Number(document.getElementById("acMonthly").value) || 0;
+    const rate = Number(document.getElementById("acRate").value) || 0;
+    const years = Number(document.getElementById("acYears").value) || 0;
+
+    state.calc = { curAmount, monthly, rate, years };
+    save();
+
+    const result = document.getElementById("acResult");
+    if (years <= 0) {
+      result.innerHTML = "<p>투자 기간(년)을 입력해주세요.</p>";
+      result.classList.add("show");
+      return;
+    }
+
+    const n = years * 12;
+    const r = rate / 100 / 12;
+    const fvLump = curAmount * Math.pow(1 + r, n);
+    const fvSeries = r === 0 ? monthly * n : monthly * ((Math.pow(1 + r, n) - 1) / r);
+    const futureValue = fvLump + fvSeries;
+    const principal = curAmount + monthly * n;
+    const growth = futureValue - principal;
+
+    result.innerHTML = `
+      <div>${years}년 뒤 예상 금액</div>
+      <div class="big">${won(futureValue)}</div>
+      <div class="breakdown">
+        <div>내가 넣은 돈(원금): <b>${won(principal)}</b></div>
+        <div>복리로 불어난 돈: <b>${won(growth)}</b></div>
+        <div>가정: 월 ${won(monthly)} 납입 · 연 ${rate}% 수익률</div>
+      </div>
+    `;
+    result.classList.add("show");
+    toast("계산 결과가 저장되었습니다");
+  });
+
+  render();
+}
+
 /* ===================== 파이프라인 ===================== */
 function initPipeline() {
   const btnSave = document.getElementById("plBtnSave");
@@ -1737,7 +1995,7 @@ function initPipeline() {
 
 /* ===================== 전체 백업 (지식정리+포트폴리오+파이프라인, 수동 파일 백업용) ===================== */
 (function () {
-  const ALL_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1"];
+  const ALL_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1", "action_log_v1"];
   const exportBtn = document.getElementById("hubBtnExport");
   if (!exportBtn) return;
 
@@ -1804,5 +2062,6 @@ function initPipeline() {
   initKnowledgeSituation();
   initPortfolio();
   initPipeline();
+  initActions();
 })();
 </script>
