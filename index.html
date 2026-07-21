@@ -1,0 +1,1785 @@
+<title>투자 허브</title>
+<style>
+  :root {
+    --bg: #eef1e9; --surface: #ffffff; --surface-2: #f5f7f1;
+    --ink: #1f2a22; --ink-muted: #5c6a5e;
+    --accent: #33477a; --accent-weak: #33477a1a;
+    --warn: #a6752a; --warn-weak: #a6752a1a;
+    --loss: #b0402f; --loss-weak: #b0402f14;
+    --gain: #2f7d4f; --gain-weak: #2f7d4f1a;
+    --border: #d7ddce;
+    --shadow: 0 1px 2px rgba(31,42,34,0.06), 0 4px 16px rgba(31,42,34,0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141813; --surface: #1b201a; --surface-2: #20261f;
+      --ink: #e6ebe0; --ink-muted: #96a290;
+      --accent: #8fa3e0; --accent-weak: #8fa3e026;
+      --warn: #e0a94f; --warn-weak: #e0a94f26;
+      --loss: #e2796a; --loss-weak: #e2796a1a;
+      --gain: #6fcf8e; --gain-weak: #6fcf8e26;
+      --border: #2a3125;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141813; --surface: #1b201a; --surface-2: #20261f; --ink: #e6ebe0; --ink-muted: #96a290;
+    --accent: #8fa3e0; --accent-weak: #8fa3e026; --warn: #e0a94f; --warn-weak: #e0a94f26;
+    --loss: #e2796a; --loss-weak: #e2796a1a; --gain: #6fcf8e; --gain-weak: #6fcf8e26;
+    --border: #2a3125; --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1e9; --surface: #ffffff; --surface-2: #f5f7f1; --ink: #1f2a22; --ink-muted: #5c6a5e;
+    --accent: #33477a; --accent-weak: #33477a1a; --warn: #a6752a; --warn-weak: #a6752a1a;
+    --loss: #b0402f; --loss-weak: #b0402f14; --gain: #2f7d4f; --gain-weak: #2f7d4f1a;
+    --border: #d7ddce; --shadow: 0 1px 2px rgba(31,42,34,0.06), 0 4px 16px rgba(31,42,34,0.05);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif; line-height: 1.55;
+  }
+  .serif { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, ui-serif, serif; }
+  .num { font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+
+  .hub-tabs {
+    position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center;
+    gap: 8px; flex-wrap: wrap; padding: 14px 20px; background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .hub-tabs .tab-group, .hub-tabs .backup-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hub-tabs button {
+    font: inherit; cursor: pointer; font-size: 0.85rem; padding: 7px 15px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted);
+  }
+  .hub-tabs .tab-group button.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  .hub-tabs .tab-group button:not(.active):hover { border-color: var(--accent); color: var(--accent); }
+  .hub-tabs .backup-group button { color: var(--ink); }
+  .hub-tabs .backup-group button:hover { border-color: var(--accent); color: var(--accent); }
+  .hub-tabs .backup-group input[type="file"] { display: none; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px;
+    font-size: 0.82rem; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  /* ===== 지식 정리 (kn) ===== */
+  #view-kn .wrap { max-width: 720px; margin: 0 auto; padding: 26px 20px 90px; }
+  #view-kn header.top {
+    margin-bottom: 26px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  }
+  #view-kn header.top h1 { font-size: 1.6rem; margin: 0 0 6px; font-weight: 600; }
+  #view-kn header.top .sub { color: var(--ink-muted); font-size: 0.88rem; }
+  #view-kn .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  #view-kn .actions button {
+    font: inherit; cursor: pointer; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); padding: 7px 13px; font-size: 0.8rem;
+  }
+  #view-kn .actions button:hover { border-color: var(--accent); }
+  #view-kn .actions input[type="file"] { display: none; }
+
+  /* 카테고리 아코디언 — 지식정리·포트폴리오 공용 */
+  .category { margin-bottom: 20px; }
+  .category summary {
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 16px; box-shadow: var(--shadow); font-weight: 600; font-size: 1rem;
+  }
+  .category summary::-webkit-details-marker { display: none; }
+  .category summary .chev { color: var(--ink-muted); font-size: 0.8rem; transition: transform .15s; margin-left: auto; }
+  .category[open] summary .chev { transform: rotate(90deg); }
+  .category summary .n { color: var(--ink-muted); font-weight: 400; font-size: 0.82rem; }
+
+  .cat-body { padding: 4px 4px 4px 6px; }
+  ul.points { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  ul.points li { padding-left: 18px; position: relative; font-size: 0.92rem; }
+  ul.points li::before { content: "・"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  ul.points li b { font-weight: 600; }
+  ul.points li .detail { color: var(--ink-muted); font-size: 0.85rem; }
+  ul.points li .badge { font-size: 0.68rem; color: var(--ink-muted); margin-left: 4px; white-space: nowrap; }
+  ul.points li .caution { color: var(--warn); display: block; margin-top: 2px; font-size: 0.82rem; }
+
+  .empty-cat { color: var(--ink-muted); font-size: 0.85rem; font-style: italic; margin: 10px 0 0; }
+
+  ul.points li.conflict {
+    border-left: 3px solid var(--loss); background: var(--loss-weak);
+    border-radius: 0 8px 8px 0; padding: 8px 10px 8px 14px;
+  }
+  ul.points li.conflict .conflict-tag {
+    display: block; color: var(--loss); font-weight: 700; font-size: 0.76rem; margin-bottom: 3px;
+  }
+
+  #view-kn .situation-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  #view-kn .situation-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--ink-muted); }
+  #view-kn .situation-form input, #view-kn .situation-form select {
+    font: inherit; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--ink);
+  }
+  #view-kn .situation-form .submit-row { grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 2px; }
+  #view-kn .situation-form button {
+    font: inherit; cursor: pointer; border-radius: 7px; border: 1px solid var(--accent);
+    background: var(--accent); color: var(--surface); padding: 8px 16px; font-size: 0.85rem;
+  }
+  #view-kn .situation-result {
+    margin-top: 14px; padding: 14px 16px; border-radius: 10px; background: var(--surface-2);
+    border: 1px solid var(--border); font-size: 0.88rem; display: none;
+  }
+  #view-kn .situation-result.show { display: block; }
+  #view-kn .situation-result h3 { margin: 0 0 8px; font-size: 0.92rem; }
+  #view-kn .situation-result ol { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  #view-kn .situation-result .calc-note { color: var(--ink-muted); font-size: 0.78rem; margin-top: 10px; }
+  #view-kn .situation-result h4 { margin: 16px 0 6px; font-size: 0.84rem; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-muted); }
+  #view-kn .situation-result h4:first-of-type { margin-top: 4px; }
+  #view-kn .alloc-mini-row { display: grid; grid-template-columns: 90px 1fr 50px; gap: 10px; align-items: center; padding: 4px 0; font-size: 0.85rem; }
+  #view-kn .alloc-mini-track { height: 10px; border-radius: 4px; background: var(--surface); overflow: hidden; border: 1px solid var(--border); }
+  #view-kn .alloc-mini-fill { height: 100%; background: var(--accent); }
+  #view-kn .monthly-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-top: 4px; }
+  #view-kn .monthly-table td { padding: 5px 0; border-bottom: 1px dashed var(--border); }
+  #view-kn .monthly-table td:last-child { text-align: right; font-weight: 600; }
+  #view-kn .monthly-table tr:last-child td { border-bottom: none; font-weight: 700; }
+
+  #view-kn .action-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 14px;
+  }
+  #view-kn .action-card h2 { font-size: 1rem; font-weight: 600; margin: 0 0 4px; }
+  #view-kn .action-card .sub { color: var(--ink-muted); font-size: 0.8rem; margin-bottom: 10px; }
+
+  #view-kn ul.todos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  #view-kn ul.todos li { display: flex; align-items: flex-start; gap: 9px; }
+  #view-kn ul.todos li input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+  #view-kn ul.todos li .todo-text { font-size: 0.9rem; }
+  #view-kn ul.todos li .todo-text .why { display: block; color: var(--ink-muted); font-size: 0.78rem; margin-top: 1px; }
+  #view-kn ul.todos li.done .todo-text { color: var(--ink-muted); text-decoration: line-through; }
+
+  #view-kn table.goals { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  #view-kn table.goals th { text-align: left; color: var(--ink-muted); font-weight: 500; font-size: 0.74rem; text-transform: uppercase; letter-spacing: .03em; padding: 0 8px 6px 0; border-bottom: 1px solid var(--border); }
+  #view-kn table.goals td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  #view-kn table.goals tr:last-child td { border-bottom: none; }
+  #view-kn table.goals .metric { font-weight: 600; white-space: nowrap; }
+  #view-kn table.goals .why { color: var(--ink-muted); font-size: 0.78rem; }
+
+  #view-kn .updated-tag {
+    display: inline-block; font-size: 0.68rem; color: var(--accent); background: var(--accent-weak);
+    border-radius: 5px; padding: 1px 6px; margin-left: 6px;
+  }
+
+  #view-kn footer.note {
+    margin-top: 34px; font-size: 0.76rem; color: var(--ink-muted); border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  /* ===== 포트폴리오 (pf) ===== */
+  #view-pf .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 80px; }
+  #view-pf header.top {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 22px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  #view-pf header.top h1 { font-size: 1.7rem; margin: 0 0 4px; font-weight: 600; text-wrap: balance; }
+  #view-pf header.top .sub { color: var(--ink-muted); font-size: 0.88rem; }
+  #view-pf .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  #view-pf button {
+    font: inherit; cursor: pointer; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); padding: 8px 14px; font-size: 0.85rem;
+    transition: border-color .15s, background .15s;
+  }
+  #view-pf button:hover { border-color: var(--accent); }
+  #view-pf button.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  #view-pf button.primary:hover { filter: brightness(1.08); }
+  #view-pf button.ghost { background: transparent; }
+  #view-pf button.small { padding: 5px 10px; font-size: 0.78rem; }
+  #view-pf input, #view-pf select, #view-pf textarea {
+    font: inherit; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); width: 100%;
+  }
+  #view-pf input[type="file"] { display: none; }
+  #view-pf label.field { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--ink-muted); }
+
+  #view-pf .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  @media (max-width: 760px) { #view-pf .stats { grid-template-columns: repeat(2, 1fr); } }
+  #view-pf .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  #view-pf .stat .label { font-size: 0.72rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  #view-pf .stat .value { font-size: 1.4rem; margin-top: 4px; font-weight: 600; }
+  #view-pf .stat .value.gain { color: var(--gain); }
+  #view-pf .stat .value.loss { color: var(--loss); }
+
+  #view-pf section { margin-bottom: 30px; }
+  #view-pf section > h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  #view-pf section > h2 .count { color: var(--ink-muted); font-weight: 400; font-size: 0.85rem; }
+  #view-pf .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; }
+
+  #view-pf .alloc-row { display: grid; grid-template-columns: 110px 1fr 90px 70px; gap: 12px; align-items: center; padding: 7px 0; }
+  #view-pf .alloc-row + .alloc-row { border-top: 1px solid var(--border); }
+  #view-pf .alloc-bar-track { position: relative; height: 18px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+  #view-pf .alloc-bar-fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); opacity: 0.55; }
+  #view-pf .alloc-bar-target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); opacity: 0.6; }
+  #view-pf .alloc-target-input { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--ink-muted); }
+  #view-pf .alloc-target-input input { width: 52px; padding: 4px 5px; text-align: right; }
+
+  #view-pf .table-scroll { overflow-x: auto; }
+  #view-pf table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 920px; }
+  #view-pf thead th {
+    text-align: left; font-weight: 500; color: var(--ink-muted); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.04em; padding: 0 10px 8px; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  #view-pf tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  #view-pf tbody tr:last-child td { border-bottom: none; }
+  #view-pf tbody tr:hover { background: var(--surface-2); }
+  #view-pf td.right, #view-pf th.right { text-align: right; }
+  #view-pf .asset-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 999px; background: var(--surface-2); color: var(--ink-muted); border: 1px solid var(--border); }
+  #view-pf .pill { font-size: 0.72rem; padding: 3px 9px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  #view-pf .pill.hold { background: var(--accent-weak); color: var(--accent); }
+  #view-pf .pill.take-profit { background: var(--gain-weak); color: var(--gain); }
+  #view-pf .pill.stop-loss { background: var(--loss-weak); color: var(--loss); }
+  #view-pf .pill.watch { background: var(--warn-weak); color: var(--warn); }
+  #view-pf .pl.gain { color: var(--gain); }
+  #view-pf .pl.loss { color: var(--loss); }
+  #view-pf .row-del { background: none; border: none; color: var(--ink-muted); cursor: pointer; font-size: 0.95rem; padding: 2px 6px; }
+  #view-pf .row-del:hover { color: var(--loss); }
+
+  #view-pf .add-form {
+    display: grid; grid-template-columns: repeat(6, 1fr) auto; gap: 10px; margin-top: 14px;
+    padding-top: 14px; border-top: 1px dashed var(--border); align-items: end;
+  }
+  @media (max-width: 900px) { #view-pf .add-form { grid-template-columns: repeat(2, 1fr); } }
+
+  #view-pf .empty { color: var(--ink-muted); font-size: 0.85rem; padding: 18px 4px; }
+
+  #view-pf .journal-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  #view-pf .journal-item { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--surface-2); }
+  #view-pf .journal-item .meta { display: flex; justify-content: space-between; gap: 10px; font-size: 0.74rem; color: var(--ink-muted); margin-bottom: 4px; }
+  #view-pf .journal-item .tag { color: var(--accent); font-weight: 600; }
+  #view-pf .journal-item p { margin: 4px 0 0; font-size: 0.88rem; }
+  #view-pf .journal-item a { color: var(--accent); }
+  #view-pf .journal-item .item-actions { margin-top: 8px; display: flex; gap: 8px; }
+  #view-pf .journal-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  #view-pf .journal-form textarea { grid-column: 1 / -1; min-height: 64px; resize: vertical; }
+  #view-pf .journal-form .submit-row { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+
+  #view-pf .principle-list { display: flex; flex-direction: column; gap: 10px; }
+  #view-pf .principle-item { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--surface-2); }
+  #view-pf .principle-item .count-badge {
+    flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-weak);
+    color: var(--accent); display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 700;
+  }
+  #view-pf .principle-item .body { flex: 1; min-width: 0; }
+  #view-pf .principle-item .tag { color: var(--accent); font-weight: 600; font-size: 0.82rem; }
+  #view-pf .principle-item .seen { color: var(--ink-muted); font-size: 0.72rem; margin-left: 6px; }
+  #view-pf .principle-item p { margin: 4px 0 0; font-size: 0.88rem; }
+  #view-pf .principle-item .caution { color: var(--warn); font-size: 0.78rem; margin-top: 4px; }
+
+  #view-pf .note {
+    font-size: 0.78rem; color: var(--ink-muted); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 10px;
+  }
+
+  /* ===== 파이프라인 (pl) ===== */
+  #view-pl .wrap { max-width: 920px; margin: 0 auto; padding: 26px 20px 90px; }
+  #view-pl header.top {
+    margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  }
+  #view-pl header.top h1 { font-size: 1.6rem; margin: 0 0 6px; font-weight: 600; }
+  #view-pl header.top .sub { color: var(--ink-muted); font-size: 0.88rem; }
+  #view-pl .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  #view-pl .actions button {
+    font: inherit; cursor: pointer; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); padding: 7px 13px; font-size: 0.8rem;
+  }
+  #view-pl .actions button:hover { border-color: var(--accent); }
+  #view-pl .actions input[type="file"] { display: none; }
+
+  #view-pl .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+  @media (max-width: 700px) { #view-pl .stats { grid-template-columns: repeat(2, 1fr); } }
+  #view-pl .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; box-shadow: var(--shadow); }
+  #view-pl .stat .label { font-size: 0.7rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  #view-pl .stat .value { font-size: 1.3rem; margin-top: 4px; font-weight: 600; }
+
+  #view-pl section { margin-bottom: 26px; }
+  #view-pl section > h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 4px; }
+  #view-pl section > .sub { color: var(--ink-muted); font-size: 0.82rem; margin-bottom: 14px; }
+
+  #view-pl .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; }
+
+  #view-pl .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 860px) { #view-pl .board { grid-template-columns: 1fr; } }
+  #view-pl .lane { display: flex; flex-direction: column; gap: 10px; }
+  #view-pl .lane-head {
+    font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 6px 10px; border-radius: 7px; display: flex; justify-content: space-between; align-items: center;
+  }
+  #view-pl .lane-head.idea { background: var(--accent-weak); color: var(--accent); }
+  #view-pl .lane-head.started { background: var(--warn-weak); color: var(--warn); }
+  #view-pl .lane-head.earning { background: var(--gain-weak); color: var(--gain); }
+  #view-pl .lane-head.stopped { background: var(--loss-weak); color: var(--loss); }
+  #view-pl .lane-empty { color: var(--ink-muted); font-size: 0.78rem; font-style: italic; padding: 4px 2px; }
+
+  #view-pl .p-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 12px 13px; font-size: 0.85rem; }
+  #view-pl .p-card .p-name { font-weight: 600; margin-bottom: 4px; }
+  #view-pl .p-card .p-goal { color: var(--ink-muted); font-size: 0.8rem; margin-bottom: 6px; }
+  #view-pl .p-card .p-next { font-size: 0.78rem; background: var(--surface-2); border-radius: 6px; padding: 5px 8px; margin-bottom: 6px; }
+  #view-pl .p-card .p-next b { color: var(--accent); }
+  #view-pl .p-card .p-income { font-size: 0.8rem; font-weight: 600; color: var(--gain); margin-bottom: 6px; }
+  #view-pl .p-card .p-meta { font-size: 0.72rem; color: var(--ink-muted); margin-bottom: 8px; }
+  #view-pl .p-card .p-actions { display: flex; gap: 8px; }
+  #view-pl .p-card .p-actions button {
+    font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--surface-2);
+    color: var(--ink-muted); border-radius: 6px; padding: 3px 9px; font-size: 0.74rem;
+  }
+  #view-pl .p-card .p-actions button:hover { border-color: var(--accent); color: var(--accent); }
+  #view-pl .p-card .p-actions button.danger:hover { border-color: var(--loss); color: var(--loss); }
+
+  #view-pl .pform { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  #view-pl .pform .full { grid-column: 1 / -1; }
+  #view-pl .pform label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--ink-muted); }
+  #view-pl .pform input, #view-pl .pform select, #view-pl .pform textarea {
+    font: inherit; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--ink);
+  }
+  #view-pl .pform textarea { min-height: 56px; resize: vertical; }
+  #view-pl .pform .submit-row { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+  #view-pl .pform .submit-row .hint { font-size: 0.76rem; color: var(--ink-muted); }
+  #view-pl .pform button {
+    font: inherit; cursor: pointer; border-radius: 7px; border: 1px solid var(--accent);
+    background: var(--accent); color: var(--surface); padding: 8px 16px; font-size: 0.85rem;
+  }
+  #view-pl .pform button.cancel { background: transparent; color: var(--ink-muted); border-color: var(--border); }
+
+  #view-pl footer.note {
+    margin-top: 34px; font-size: 0.76rem; color: var(--ink-muted); border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+</style>
+
+<div class="hub-tabs">
+  <div class="tab-group">
+    <button class="tab active" data-view="kn">📚 지식 정리</button>
+    <button class="tab" data-view="pf">📒 포트폴리오 (주식)</button>
+    <button class="tab" data-view="pl">🚀 파이프라인</button>
+  </div>
+  <div class="backup-group">
+    <span id="syncIndicator" style="font-size:0.78rem; color:var(--ink-muted); align-self:center;"></span>
+    <button id="hubBtnImportTrigger">파일에서 가져오기</button>
+    <input type="file" id="hubFileImport" accept="application/json" />
+    <button id="hubBtnExport">파일로 내보내기</button>
+  </div>
+</div>
+
+<!-- ============ 지식 정리 ============ -->
+<div class="view active" id="view-kn">
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1 class="serif">투자 지식 정리</h1>
+        <div class="sub">글이나 영상을 보내주시면 한 줄 원칙으로 요약하고, 그에 맞춰 아래 할 일·목표치도 같이 갱신합니다. 기존 내용과 성격이 크게 다른 내용은 <span style="color:var(--loss); font-weight:600;">붉은 표시</span>로 따로 구분합니다.</div>
+      </div>
+    </header>
+
+    <div class="action-card">
+      <h2 class="serif">지금 할 일</h2>
+      <div class="sub">자료가 추가될 때마다 이 목록이 갱신됩니다. 체크는 이 브라우저에 저장돼요.</div>
+      <ul class="todos" id="knTodoList">
+        <li data-id="t1">
+          <input type="checkbox" />
+          <span class="todo-text">매달 자동이체로 ETF 적립식 투자 시작하기 — 우선 월 30만원부터
+            <span class="why">근거: "월 정액 ETF 적립식 + 장기 복리" 영상, "꾸준함이 이긴다" 인터뷰<span class="updated-tag">2026-07-21 갱신</span></span>
+          </span>
+        </li>
+        <li data-id="t2">
+          <input type="checkbox" />
+          <span class="todo-text">종목 살 때마다 "왜 사는지 · 얼마나 · 언제까지"를 미리 한 줄로 적어두는 습관 만들기
+            <span class="why">근거: "나만의 투자 심의 보고서" 원칙 <span class="updated-tag">2026-07-21 추가</span></span>
+          </span>
+        </li>
+        <li data-id="t3">
+          <input type="checkbox" />
+          <span class="todo-text">ISA 계좌부터 개설하기 (증권사 앱에서 비대면 개설, 최소 가입기간 3년, 만기는 최대한 길게 설정)
+            <span class="why">근거: "계좌 활용 순서: ISA → 연금저축 → 일반계좌" <span class="updated-tag">2026-07-21 갱신</span></span>
+          </span>
+        </li>
+        <li data-id="t4">
+          <input type="checkbox" />
+          <span class="todo-text">이번 달 가계부 확인해서 저축률이 월급의 30% 이상인지 체크하기
+            <span class="why">근거: "생활이 불편해질 만큼 저축" 원칙 <span class="updated-tag">2026-07-21 추가</span></span>
+          </span>
+        </li>
+        <li data-id="t5">
+          <input type="checkbox" />
+          <span class="todo-text">본업 외 수입 파이프라인 하나 실험해보기 (부업/콘텐츠 등, 주당 소량 시간만)
+            <span class="why">근거: "수입원을 여러 개로 늘려라" 원칙 <span class="updated-tag">2026-07-21 추가</span></span>
+          </span>
+        </li>
+        <li data-id="t6">
+          <input type="checkbox" />
+          <span class="todo-text">증권사 앱에서 국내 S&amp;P500 ETF 후보 비교하기 (운용규모 1조원+, 거래대금 많음, 수수료 0.03~0.07%)
+            <span class="why">근거: "ETF 고르는 기준" <span class="updated-tag">2026-07-21 추가</span></span>
+          </span>
+        </li>
+        <li data-id="t7">
+          <input type="checkbox" />
+          <span class="todo-text">계좌를 용도별로 4개로 나누기 — 월급통장(수령 전용) · 소비통장(이번 달 쓸 돈) · 계절지출통장(명절·여행·보험료 등 연간 지출) · 저수지통장(예비자금 약 1개월치)
+            <span class="why">근거: "통장 나누기(현금흐름 관리)" 원칙 <span class="updated-tag">2026-07-21 추가</span></span>
+          </span>
+        </li>
+        <li data-id="t8">
+          <input type="checkbox" />
+          <span class="todo-text">저축액을 한 번에 정하지 말고, 지금 감당 가능한 선에서 시작해서 매년 자동으로 조금씩 늘리는 계획 세우기 (예: 매년 +10만원)
+            <span class="why">근거: "가볍게 시작해서 점진적으로 증액" 원칙 <span class="updated-tag">2026-07-21 추가</span></span>
+          </span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="action-card">
+      <h2 class="serif">수입 파이프라인</h2>
+      <div class="sub">"수입원을 여러 개로 늘려라" 원칙을 전략 수립부터 진행 상황까지 추적하는 곳이에요. 위 탭의 🚀 파이프라인에서 관리합니다.</div>
+    </div>
+
+    <div class="action-card">
+      <h2 class="serif">맞춤 전략 생성기</h2>
+      <div class="sub">내 상황을 넣고 버튼 한 번 누르면, 지금까지 이 페이지에 정리된 모든 원칙(저축률·계좌 순서·자산배분·ETF 기준)을 조합해서 배분 비율부터 월별 금액, 실행 순서까지 한 번에 뽑아드려요. 단, 실제 매수·계좌 개설은 직접 하셔야 해요 — 여기서는 "무엇을 얼마나"까지만 계산합니다.</div>
+      <div class="situation-form">
+        <label>나이 <input type="number" id="knAge" placeholder="예: 32" /></label>
+        <label>월 소득(실수령액) <input type="number" id="knIncome" placeholder="예: 2500000" /></label>
+        <label>월 고정지출(생활비 전체) <input type="number" id="knExpense" placeholder="예: 1800000" /></label>
+        <label>현재 모아둔 돈(비상금 포함) <input type="number" id="knSavings" placeholder="예: 3000000" /></label>
+        <label>투자 경험
+          <select id="knExperience">
+            <option value="none">전혀 없음</option>
+            <option value="some">예적금만 해봄</option>
+            <option value="etf">ETF 투자 중</option>
+          </select>
+        </label>
+        <label>리스크 성향
+          <select id="knRisk">
+            <option value="stable">안정형 (변동성 최대한 피하고 싶음)</option>
+            <option value="neutral" selected>중립형 (성장과 안정 균형)</option>
+            <option value="aggressive">공격형 (변동성 감수하고 수익 추구)</option>
+          </select>
+        </label>
+        <div class="submit-row"><button id="knBtnCalc">전략 생성하기</button></div>
+      </div>
+      <div class="situation-result" id="knSituationResult"></div>
+    </div>
+
+    <div class="action-card">
+      <h2 class="serif">목표치</h2>
+      <div class="sub">쌓인 자료를 바탕으로 잡은 기준선입니다. 새 자료가 이 숫자를 바꾸면 여기서 바로 고칩니다.</div>
+      <table class="goals">
+        <tr><th>항목</th><th>현재 목표</th><th>근거</th></tr>
+        <tr>
+          <td class="metric">월 적립액</td>
+          <td>30만원부터 시작, 매년 자동으로 소액 증액 (예: +10만원/년)</td>
+          <td class="why">현재 자산 규모(1,000만원 미만) 기준 무리 없는 출발선 + "가볍게 시작해서 점진적으로" 원칙 <span class="updated-tag">2026-07-21 갱신</span></td>
+        </tr>
+        <tr>
+          <td class="metric">저축률</td>
+          <td>월급의 최소 30%, 이상적으로는 50%+</td>
+          <td class="why">"생활이 불편해질 만큼 저축" 원칙 <span class="updated-tag">2026-07-21 추가</span></td>
+        </tr>
+        <tr>
+          <td class="metric">보유 종목 수</td>
+          <td>10개 이내</td>
+          <td class="why">"다 쫓지 마세요" — 과도한 분산은 무색무취 포트폴리오가 됨</td>
+        </tr>
+        <tr>
+          <td class="metric">목표 자산배분</td>
+          <td>ETF 40% · 주식 25% · 코인 15% · 채권 15% · 현금성 5%</td>
+          <td class="why">중립형 성향 + 혼합 투자기간, 포트폴리오 원장과 동일 기준 유지</td>
+        </tr>
+        <tr>
+          <td class="metric">계좌 활용 순서</td>
+          <td>ISA 먼저 개설 → 여유 생기면 연금저축 → 그다음 일반계좌</td>
+          <td class="why">ISA·연금저축 세제혜택이 국내 ETF에만 적용됨 <span class="updated-tag">2026-07-21 추가</span></td>
+        </tr>
+        <tr>
+          <td class="metric">첫 ETF 선택 기준</td>
+          <td>국내 상장 S&amp;P500 ETF 1종목, 운용규모 1조원+ · 수수료 0.03~0.07%</td>
+          <td class="why">경험 없을 때는 단순하게 시작 — 종목 늘리는 건 나중 <span class="updated-tag">2026-07-21 추가</span></td>
+        </tr>
+        <tr>
+          <td class="metric">나스닥100(QQQ) 추가 여부</td>
+          <td>지금은 보류 — S&amp;P500 먼저 자리잡은 후에 소액으로만 검토</td>
+          <td class="why">중립형 성향에는 변동성이 더 큰 나스닥100보다 S&amp;P500이 우선순위 <span class="updated-tag">2026-07-21 추가</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <details class="category" open>
+      <summary>복리 · 꾸준함 <span class="n">(4)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>정해진 돈을 꾸준히 넣으면 시간이 대부분을 벌어준다.</b>
+            <span class="detail">예1: 월 30만원 × 28년, 연 10% 가정 시 원금 1억 → 약 5억. 예2: 매년 1천만원 × 20년, 연 10% 복리 가정 시 원금 2억 → 약 5.7억. 예3: 월 50만원씩 20년, 적금(3.5%)=1.5억 vs S&amp;P500 ETF(연 10%대)=4.2억 — 같은 돈, 같은 기간, 차이 2.7억. 예4: "경제적 자유" 필요자산 = 원하는 연 생활비 ÷ 인출률(예: 4%). 1인가구 최저생계비 연 1,500만원 기준 약 3.75억. 참고 수익률: S&amp;P500 최근 5년 연 15.9%, 10년 13.7%, 20년 10.7%.</span>
+            <span class="caution">⚠ 연 10% 가정은 과거 평균일 뿐, 미래 수익은 보장되지 않음</span>
+            <span class="badge">5회 확인</span>
+          </li>
+          <li><b>돈에도 "관성의 법칙"이 있다 — 종잣돈 1천만원~1억을 모으는 초반이 가장 힘들고, 그 이후 속도가 붙는다.</b>
+            <span class="detail">처음엔 안 보이지만, 어느 순간부터 불어나는 게 체감된다는 여러 화자 공통 경험. 1억을 "비행기가 성층권에 진입하는 고도"에 비유 — 그 전까지는 필수 구간.</span>
+            <span class="badge">3회 확인</span>
+          </li>
+          <li><b>큰 부는 대부분 후반부에 생긴다 — 워렌 버핏도 재산 대부분을 60세 이후에 만들었다.</b>
+            <span class="detail">조급해하지 않고 오래 버티는 것 자체가 전략.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>전문가도 시장 전체(S&amp;P500)를 장기로는 잘 못 이긴다 — 워렌 버핏조차 "내가 죽으면 자산의 90%를 S&amp;P500 인덱스에, 10%는 단기국채에 넣으라"고 유언했다.</b>
+            <span class="detail">2007년 버핏이 헤지펀드 매니저와 100만 달러(약 14억원) 내기: "10년간 S&amp;P500 인덱스가 전문 운용 헤지펀드보다 수익률이 높을 것이다." 결과는 S&amp;P500의 압승. 액티브 운용(종목 골라서 사고파는 것)이 장기적으로 그냥 시장 전체를 사서 버티는 것보다 나은 경우가 드물다는 근거.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="category" open>
+      <summary>잃지 않는 법 <span class="n">(7)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>크게 버는 것보다 크게 잃지 않는 게 훨씬 중요하다.</b>
+            <span class="detail">7번 맞아도 3번 크게 틀리면 계좌는 마이너스. -50% 손실은 원금 회복에 +100% 수익이 필요함(50%가 아님).</span>
+            <span class="badge">2회 확인</span>
+          </li>
+          <li><b>사고 팔 때는 반드시 "왜"를 먼저 적어라 (나만의 투자 심의 보고서 / 주식 노트).</b>
+            <span class="detail">감이나 남 말이 아니라, 왜 사는지·얼마나·언제까지 팔지를 미리 기록해두면 틀렸을 때 원인을 복기할 수 있음. 매수가·수량·추적 손절매 기준선도 같이 적어두고 주가가 오를 때마다 손절선을 갱신하는 용도로도 씀.</span>
+            <span class="badge">2회 확인</span>
+          </li>
+          <li><b>내가 공격형(고위험 선호)인지 수비형(안정 선호)인지부터 파악하고, 부족한 쪽을 보완하라.</b>
+            <span class="detail">한쪽으로 치우치면 결국 그 약점 쪽으로 성과가 수렴한다는 비유(야구의 평균 회귀).</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>사기당하지 않고, 하룻밤에 자산이 반토막 나는 선택만 안 해도 이미 상위권이다.</b>
+            <span class="detail">대박을 노리기보다 치명적 실수부터 피하는 게 우선순위.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>폭락장에서 안 팔고 버티면 대부분 회복하고 그 이상 오른다 — 패닉 매도가 가장 큰 손실 원인.</b>
+            <span class="detail">예: 2020년 3월 코로나 폭락 때 S&amp;P500 한 달 만에 -30%, 하지만 6개월 뒤 본전 회복, 2년 뒤엔 폭락 전보다 +40%.</span>
+            <span class="caution">⚠ 과거 사례일 뿐이며, 모든 폭락이 이렇게 회복된다는 보장은 없음</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>은퇴가 가까워질수록 위험자산 비중을 낮춰야 한다 — 그 시점엔 손실이 나도 복구할 시간이 없다.</b>
+            <span class="detail">지금(자산을 불리는 시기)과 노후(자산을 지키는 시기)는 다른 전략이 필요하다는 원칙. 지금 당장 적용할 건 아니지만 나이가 들수록 참고.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="category" open>
+      <summary>저축 · 수입 다각화 <span class="n">(4)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>애매하게 아끼면 안 모인다 — "생활이 불편해질 만큼" 저축해야 자산이 눈덩이처럼 불어난다.</b>
+            <span class="detail">기준: 월급의 최소 30% 저축, 50% 넘기면 속도가 확 붙는다는 게 공통된 조언.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>월급 하나에 인생 전체를 걸지 말고 수입원을 여러 개로 늘려라.</b>
+            <span class="detail">블로그·부업·콘텐츠처럼 작게 시작해도 쌓이면 월급과 비교 안 되는 파이프라인이 됨 ("자산가는 평균 7개 수입원").</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>저축액은 처음부터 크게 잡지 말고, 지금 할 수 있는 선에서 시작해서 매년 조금씩(정액 또는 정률로) 늘려가라.</b>
+            <span class="detail">예: 월 95만원으로 시작해 매년 +10만원씩 7년 → 목표(물가상승 반영 1억1,500만원)보다 많은 1억2,000만원 달성. 처음부터 큰 금액을 목표로 포기하는 것보다 낫다는 접근.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>노후 준비에서 재테크가 차지하는 비중은 30% 이내다 — 나머지 70%는 "계속 건강하게 일하거나 좋아하는 일을 돈이 되게 만드는 능력"이다.</b>
+            <span class="detail">투자·저축만으로 노후를 완성하려는 접근은 위험하다는 경고. 부업(잡)을 용돈벌이가 아니라 나중에 커질 수 있는 "세컨잡"으로 키우는 관점.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="category">
+      <summary>통장 나누기 (현금흐름 관리) <span class="n">(4)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>월급통장은 월급 받는 용도로만 써라 — 월급 들어온 당일에 저축·소비 몫을 전부 다른 통장으로 옮기고 잔액을 0으로 만든다.</b>
+            <span class="detail">여러 용도가 한 통장에 섞이면 흐름 파악이 안 됨. 저축은 월급 받는 "당일"에 바로 이체해야 이자 손해가 없음.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>소비통장(이번 달 쓸 돈)을 따로 두고, 그 안에서도 항목별 예산을 세워라.</b>
+            <span class="detail">예: 식생활비 100만원을 "장보기 60 · 외식 20 · 배달 20"으로 쪼개면, 같은 돈이라도 어디에 얼마 남았는지 보이니 더 효율적으로 쓰게 됨.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>계절지출통장을 따로 만들어 명절·여행·자동차보험·월동준비처럼 연중 특정 시기에 몰리는 지출을 미리 대비하라.</b>
+            <span class="detail">저축이 아니라 "예정된 지출"을 위한 통장. 매달 일정액을 여기에 적립해두면 명절이나 보험료 낼 때 당황하지 않음.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>저수지통장(예비자금)을 월급 1개월치 정도 마련해두고, 꺼내 썼으면 여유 있을 때 다시 채워라.</b>
+            <span class="detail">갑자기 목돈 나갈 일이 생겼을 때 저축·투자 계좌를 건드리지 않기 위한 완충 장치.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="action-card">
+      <h2 class="serif">종목 고르는 법</h2>
+      <div class="sub">개별 주식 매매 원칙은 실제 종목 손절가·목표가와 바로 연결돼서 📒 포트폴리오 탭으로 옮겼어요.</div>
+    </div>
+
+    <details class="category" open>
+      <summary>자산배분 · 계좌 <span class="n">(8)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>한 곳에 몰빵하지 말고 주식·채권 등으로 분산하라 — 그래야 흔들려도 끝까지 버틸 수 있다.</b>
+            <span class="detail">공포에 손절하지 않고 시장에 오래 남아있는 것 자체가 수익률을 만든다.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>계좌는 ISA → 연금저축 → 일반계좌 순서로 활용하라.</b>
+            <span class="detail">ISA: 연 200만원까지 비과세, 초과분은 9.9%만 과세(원래 15.4%). 단 ISA는 국내 상장 ETF만 가능 — 해외 상장 ETF(SPY 등)는 ISA에 못 담음. 연금저축: 연 최대 600만원 납입 시 16.5% 세액공제(최대 99만원 환급), 단 55세까지 인출 불가. 초보자·월 30~50만원대는 ISA부터, 여유 있으면 연금저축까지.</span>
+            <span class="badge">3회 확인</span>
+          </li>
+          <li><b>ETF는 아무거나 고르지 말고 3가지만 확인하라: 운용규모(1조원 이상), 거래대금(많을수록 나중에 팔기 쉬움), 총보수(0.02~0.2% 수준).</b>
+            <span class="detail">같은 S&amp;P500을 따라가는 ETF라도 운용사(예: TIGER·KODEX·ACE·RISE)별로 이 3가지가 조금씩 다름. 수수료는 운용사끼리 경쟁하면서 매달 바뀌기도 하니, 매번 제일 싼 곳 쫓아다니며 갈아타지 말고 오래 유지하기 편한 곳 하나로 정착하는 게 낫다(갈아탈 때마다 매매수수료가 더 나감).</span>
+            <span class="badge">2회 확인</span>
+          </li>
+          <li><b>국내 상장 ETF와 해외 상장 ETF(SPY·VOO·IVV·SPLG 등)는 트레이드오프가 있다.</b>
+            <span class="detail">국내형: 원화로 바로 매수, ISA·연금저축 가능(세제혜택 O), 주당 가격 저렴(2~3만원대). 해외형: 운용보수가 더 낮고 달러 자산을 직접 보유(환차익 가능·배당 달러 수령)하지만 환전수수료 발생, ISA·연금저축 불가, 주당 가격 비쌈(SPLG 제외 대부분 50만원+). 세금 비교: 국내상장 ETF는 일반계좌에서 매매차익 15.4% 과세, 해외 직투는 연 250만원 공제 후 22% 과세 — 세금만 보면 국내상장이 더 유리. 해외 ETF 중에서 고른다면 수수료 최저·가격도 저렴한 SPLG가 후보.</span>
+            <span class="badge">3회 확인 · 지금 규모(1,000만원 미만)에서는 국내형이 더 실용적</span>
+          </li>
+          <li><b>목돈을 한 번에 넣지 말고 정립식(분할 매수)으로, 최소 1년 이상 보유 관점으로 접근하라.</b>
+            <span class="detail">한두 달 등락에 일희일비할 거면 아예 안 하는 게 낫다는 조언. 매수 주기(매일/매주/매달)는 상관없고 꾸준히만 하면 됨 — 목돈(2천만원 이상)이 갑자기 생겨도 한 번에 넣지 말고 증권사 앱 "주식 모으기" 기능으로 매일 나눠 사는 걸 추천.</span>
+            <span class="badge">2회 확인</span>
+          </li>
+          <li><b>"지금이 고점이라 불안하다"는 이유로 매수를 미루지 마라 — 고점·저점, 환율 방향 모두 아무도 못 맞춘다.</b>
+            <span class="detail">예측해서 사고파는 게 아니라 "정해둔 날에 정해둔 만큼 산다"를 등교하듯 반복하는 것 자체가 전략. 오늘의 고점이 나중엔 저점이었을 수도 있음.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>환노출형(H 없음)과 환헤지형(H 붙음) ETF는 환율 변동을 다르게 반영한다.</b>
+            <span class="detail">환노출형: 원/달러 환율 변동을 그대로 반영(환율 오르면 유리, 내리면 불리). 환헤지형(예: "S&amp;P500(H)"): 환율 변수를 없애고 지수 자체 수익률만 추종하지만 수수료가 더 비쌈. 초장기 투자라면 환노출형(순정)도 괜찮다는 관점.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>S&amp;P500과 나스닥100(QQQ) 중 고를 땐 "수익률이냐 안정성이냐"로 판단하라 — 나스닥100은 기술주 비중이 커서 수익률도 변동성도 더 크다.</b>
+            <span class="detail">10년 백테스트(2016~2026): 1천만원 투자 시 S&amp;P500 → 약 3,500만원, 나스닥100 → 약 6,700만원. 다만 하루 등락폭도 나스닥100이 더 큼. 변동성이 부담스러우면 S&amp;P500 비중을 높이고, 감수할 수 있으면 나스닥100을 섞는 정도로 접근.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+        </ul>
+        <p class="empty-cat" style="font-style:normal;">
+          📌 <b>최신 이슈 (2026-05-01 시행)</b>: 나스닥100에 "패스트 엔트리" 룰이 도입돼, 시총이 매우 큰 신규 상장 기업(예: 스페이스X)이 상장 후 약 3주(15거래일) 만에 지수에 편입될 수 있게 됨. 재심사도 연 1회 → 분기 1회로 잦아짐. 좋은 점은 차세대 대형 기업을 빠르게 자동으로 담게 된다는 것, 단점은 상장 초기 종목 특유의 변동성이 지수 전체에 더 크게 반영될 수 있다는 것. 지금 규모에서는 참고만 하고 특별히 대응할 필요는 없음.
+        </p>
+      </div>
+    </details>
+
+    <details class="category">
+      <summary>부동산 <span class="n">(1)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>안정적인 내 집(베이스캠프)을 먼저 마련하고, 그다음에 대출(레버리지)을 활용하라.</b>
+            <span class="detail">현금도 소득도 불안정한 상태에서 대출 풀로 당겨 여러 채 사는 건 도박. 순서가 실력보다 중요.</span>
+            <span class="badge">1회 확인 · 지금 자산 규모(1,000만원 미만)에서는 우선순위 낮음</span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="category">
+      <summary>돈에 대한 태도 <span class="n">(5)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>돈 자체를 목표로 삼지 말고, "이 돈으로 무엇을 할지"를 먼저 생각하라.</b>
+            <span class="detail">경험과 능력(내재가치)이 쌓이면 돈은 따라온다는 관점.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>내가 자주 만나는 사람·환경이 곧 내 평균이 된다 — 기회가 있는 판에 스스로 들어가라.</b>
+            <span class="detail">투자·자기계발 얘기가 자연스러운 환경에 있어야 안주하지 않고 계속 나아가게 됨.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>경제적 가치관이 맞는 파트너와 함께하면 목표 달성 속도가 훨씬 빨라진다.</b>
+            <span class="detail">돈 관리 방식이 다른 사람과는 아무리 벌어도 갈등이 반복될 수 있음.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>돈 관리는 "기록"만으론 부족하다 — 진단(내 상태 파악) → 목표를 숫자로 그려보기(시뮬레이션) → 구조화(자동으로 남는 시스템 만들기)까지 가야 완성이다.</b>
+            <span class="detail">가계부 기록만 하고 끝나면 매달 같은 소비가 반복된다는 지적. 위 "맞춤 전략 생성기" 기능이 이 원리를 적용한 것.</span>
+            <span class="caution">⚠ 이 프레임 자체는 유용하지만, 출처가 유료 가계부 제품(텀블벅 펀딩)을 홍보하는 영상이라 특정 제품 추천으로는 취급하지 않음</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>매일 등락하는 수익률(%)보다, 내가 얼마나 모아가고 있는지(누적 금액)를 보는 게 장기 투자를 오래 지속하는 데 도움이 된다.</b>
+            <span class="detail">빨간색·파란색 등락에 일희일비하지 않고 "숫자가 쌓이는 재미"로 관점을 바꾸면 꾸준히 하기 쉬워진다는 경험담. "노동 졸업"(더 이상 일하지 않아도 되는 시점)을 목표로 삼으면 지금의 고점·저점 논쟁이 덜 중요해진다는 관점도 같은 맥락.</span>
+            <span class="badge">2회 확인</span>
+          </li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="category">
+      <summary>용어 사전 <span class="n">(10)</span><span class="chev">▸</span></summary>
+      <div class="cat-body">
+        <ul class="points">
+          <li><b>ETF</b> <span class="detail">— 여러 종목을 묶어놓은 바구니 상품. 주식처럼 거래소에서 바로 사고팔 수 있음.</span></li>
+          <li><b>적립식 투자(DCA)</b> <span class="detail">— 가격과 상관없이 매달 정해진 금액을 나눠서 꾸준히 사는 방식.</span></li>
+          <li><b>현금흐름표</b> <span class="detail">— 회사가 돈을 어디서 벌어서 어디에 썼는지 보여주는 표. 실제 행동을 검증할 때 씀.</span></li>
+          <li><b>ISA (개인종합자산관리계좌)</b> <span class="detail">— 국내 상장 주식·ETF에 투자하면서 세금을 아낄 수 있는 계좌. 연 200만원까지 수익 비과세.</span></li>
+          <li><b>이동평균선 · 정배열</b> <span class="detail">— 일정 기간 주가 평균을 이은 선. 짧은 기간 선이 위, 긴 기간 선이 아래로 순서대로 쌓이면(정배열) 장기 상승 추세라는 신호.</span></li>
+          <li><b>골든크로스 / 데드크로스</b> <span class="detail">— 단기 이동평균선이 장기 이동평균선을 위로 뚫으면 골든크로스(긍정 신호), 아래로 뚫으면 데드크로스(위험 신호).</span></li>
+          <li><b>나스닥100 (QQQ)</b> <span class="detail">— 나스닥 상장 기업 중 금융회사를 뺀 시가총액 상위 100개(빅테크 위주)를 모은 지수. S&amp;P500보다 기술주 비중이 높아 수익률·변동성 모두 더 큰 편.</span></li>
+          <li><b>패스트 엔트리</b> <span class="detail">— 2026년 5월부터 나스닥100에 도입된 규칙. 초대형 신규 상장 기업을 기존(최대 1년 대기)보다 훨씬 빠르게(약 3주 내) 지수에 편입시킴.</span></li>
+          <li><b>환노출형 / 환헤지형(H)</b> <span class="detail">— 해외지수 추종 ETF 이름 뒤에 "(H)"가 붙으면 환헤지형(환율 변수 제거, 수수료 더 비쌈). 안 붙으면 환노출형(원/달러 환율 변동을 그대로 반영).</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <footer class="note">
+      보내주신 자료를 제가 읽고 요약·분류한 결과입니다. 투자 자문이 아니니 실제 결정 전엔 다른 출처도 함께 확인하세요.
+      다른 기기와 맞추려면 "백업 내보내기" 파일을 구글 드라이브 등에 올려두고 다른 기기에서 "가져오기"로 불러오세요.
+    </footer>
+  </div>
+</div>
+
+<!-- ============ 포트폴리오 ============ -->
+<div class="view" id="view-pf">
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1 class="serif">포트폴리오 원장</h1>
+        <div class="sub">중립형 · 자산군 혼합 · 마지막 갱신 <span id="pfLastUpdated">—</span></div>
+      </div>
+      <div class="actions">
+        <button class="small" id="pfBtnHowRefresh">시세 갱신 방법</button>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><div class="label">총 매수원금</div><div class="value num" id="pfStatCost">₩0</div></div>
+      <div class="stat"><div class="label">평가금액</div><div class="value num" id="pfStatValue">₩0</div></div>
+      <div class="stat"><div class="label">평가손익</div><div class="value num" id="pfStatPL">₩0</div></div>
+      <div class="stat"><div class="label">점검 필요 종목</div><div class="value num" id="pfStatAlerts">0</div></div>
+    </div>
+
+    <section>
+      <h2 class="serif">목표 배분 <span class="count">회색 세로선 = 목표 비중</span></h2>
+      <div class="card" id="pfAllocCard"></div>
+    </section>
+
+    <section>
+      <h2 class="serif">보유 종목 <span class="count" id="pfPosCount"></span></h2>
+      <div class="card">
+        <div class="table-scroll">
+          <table id="pfPosTable">
+            <thead>
+              <tr>
+                <th>자산군</th><th>종목명</th><th class="right">보유기간</th>
+                <th class="right">수량</th><th class="right">매수가</th><th class="right">현재가</th><th class="right">고점</th>
+                <th class="right">매수금액</th><th class="right">평가금액</th><th class="right">손익</th>
+                <th class="right">목표가</th><th class="right">손절가</th><th>상태</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="pfPosBody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="pfPosEmpty">아직 등록된 종목이 없습니다. 아래에서 첫 종목을 추가하세요.</div>
+
+        <div class="add-form">
+          <label class="field">자산군
+            <select id="pfFAssetClass">
+              <option value="주식">주식</option>
+              <option value="ETF">ETF</option>
+              <option value="코인">코인</option>
+              <option value="채권">채권</option>
+              <option value="현금성">현금성</option>
+            </select>
+          </label>
+          <label class="field">종목명 <input id="pfFName" placeholder="예: 삼성전자" /></label>
+          <label class="field">보유기간
+            <select id="pfFHorizon">
+              <option value="단기">단기</option>
+              <option value="중기" selected>중기</option>
+              <option value="장기">장기</option>
+            </select>
+          </label>
+          <label class="field">수량 <input id="pfFQty" type="number" step="any" placeholder="10" /></label>
+          <label class="field">매수가 <input id="pfFBuy" type="number" step="any" placeholder="70000" /></label>
+          <label class="field">현재가 <input id="pfFCur" type="number" step="any" placeholder="72000" /></label>
+          <label class="field">목표가 <input id="pfFTarget" type="number" step="any" placeholder="85000" /></label>
+          <label class="field">손절가 <input id="pfFStop" type="number" step="any" placeholder="63000" /></label>
+          <button class="primary" id="pfBtnAddPos">추가</button>
+        </div>
+        <div class="note" style="display:flex; gap:18px; flex-wrap:wrap; align-items:center;">
+          <span>기본 손절 기준(손절가 안 정했을 때 매수가 대비) <input type="number" id="pfStopLossPct" min="1" max="90" style="width:52px; display:inline-block;" />%</span>
+          <span>추적손절 기준(고점 대비) <input type="number" id="pfTrailingPct" min="1" max="90" style="width:52px; display:inline-block;" />%</span>
+        </div>
+        <div class="note">
+          상태는 자동 계산됩니다 — 목표가 이상이면 <b>익절 검토</b>, 손절가(직접 지정 또는 매수가 기준 기본 손절%) 이하이면 <b>손절 검토</b>,
+          한 번이라도 고점을 찍은 뒤 그 고점 대비 추적손절 기준만큼 빠지면 <b>추적손절 검토</b>, 손절가까지 5% 이내로 근접하면 <b>주의</b>로 표시됩니다.
+          현재가 칸에 직접 새 가격을 입력하고 엔터/탭하면 즉시 갱신되고 고점도 자동으로 따라 올라갑니다. "시세 갱신해줘"라고 요청하시면 최신가를 조회해서 알려드릴게요.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="serif">핵심 원칙 <span class="count">여러 번 반복되거나 확정된 것만 모음</span></h2>
+      <div class="card">
+        <div class="principle-list" id="pfPrincipleList"></div>
+        <div class="empty" id="pfPrincipleEmpty">아직 확정된 원칙이 없습니다. 학습 노트에서 "핵심 원칙으로 등록"을 누르면 여기 쌓입니다.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="serif">종목 고르는 법 <span class="count">매수·매도 판단에 바로 쓰는 매매 원칙</span></h2>
+      <details class="category" open>
+        <summary>종목 고르는 법 · 매매 원칙 <span class="n">(23)</span><span class="chev">▸</span></summary>
+        <div class="cat-body">
+          <ul class="points">
+            <li><b>단기 등락(나무)보다 그 산업이 앞으로도 커질지(숲)를 봐라.</b>
+              <span class="detail">떨어졌다고 파는 게 아니라, 그 섹터/산업 자체의 방향성이 바뀌었는지를 먼저 물어야 함.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>종목을 30개, 50개씩 늘리지 마라 — 이해도 없는 분산은 결국 아무것도 아닌 포트폴리오가 된다.</b>
+              <span class="detail">자신 있는 영역 위주로 좁혀서 투자하는 게 낫다. 기록(매매 노트)을 감당할 수 있는 개수로 줄이는 것도 이유 — 종목이 너무 많으면 기록 자체가 불가능해짐. 종목 수를 늘린다고 수익률이 오르는 게 아니라는 통계도 있음(타율 문제이지 타석 수 문제가 아님) — 확신 없어서 여러 종목/섹터ETF로 회피하고 있다면, 차라리 확신이 안 서는 부분은 지수 ETF로, 확신 있는 종목은 직접 집중 투자하는 게 낫다는 관점. 구체적 숫자: 처음엔 3종목, 익숙해져도 5종목을 넘기지 말 것.</span>
+              <span class="badge">4회 확인</span>
+            </li>
+            <li><b>매출을 "가격 × 수량"으로 나눠서, 이 회사가 가격을 스스로 올리거나 내릴 힘이 있는지 확인하라.</b>
+              <span class="detail">가격결정력이 있는 회사(기술력·독점·브랜드)는 매출 방어력이 강함.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>사람은 본능적으로 이익은 빨리 실현하고 손실은 회피·지연한다 — 그래서 대부분 "적게 벌고 크게 잃는" 패턴이 반복된다.</b>
+              <span class="detail">주가가 오르면 "혹시 떨어질까 봐" 빨리 팔고, 떨어지면 "손실 확정이 두려워" 안 팔고 버티며 본전 근처에서야 판다(손실 회피 성향). 이 본능을 의식적으로 거꾸로 훈련해야 함: 이익은 늘리고 손실은 줄이기.</span>
+              <span class="badge">1회 확인 · 개별 종목 매매 관점의 조언 — ETF 적립식·장기보유 전략과는 별개 맥락</span>
+            </li>
+            <li><b>오르는 개별 종목은 목표가를 정해놓고 팔지 말고, 고점 대비 일정 % 하락할 때 판다 ("추적 손절매/트레일링 스탑").</b>
+              <span class="detail">예: 고점에서 10% 빠지면 매도 — 수익이 클수록 이 하락 허용폭을 유연하게(예: 15~20%) 늘려도 됨. "얼마까지 오를지"는 아무도 모르니 위쪽은 열어두고, 대신 하락에 선을 긋는 방식. 아래 표에 종목을 등록할 때 목표가·손절가를 이 원칙으로 정해보세요.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>매수할 때 "얼마나 떨어지면 무조건 판다"를 미리 정해두고, 그 가격에 도달하면 예외 없이 손절한다.</b>
+              <span class="detail">기준 예시: -10%. 손실을 확정하는 게 두렵더라도, 그 돈으로 다른 기회를 다시 잡을 수 있다는 점이 더 중요. 감당 가능한 손실 범위(예: 총 투자금의 10%)로 매수 금액 자체를 정하는 것도 방법.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>개별 종목은 내가 좋아하는 걸 사지 말고, 이미 오르고 있고 오르는 이유가 분명한 "주도주"를 따라가라.</b>
+              <span class="detail">과거 가격("그때 샀어야 했는데")이나 남의 수익률과 비교하지 말고, 나만의 절대 수익을 추구. 예측은 매수 시점에만 하고, 그 이후엔 예측 대신 미리 정한 규칙(손절 기준 등)대로 기계적으로 대응.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>정보를 많이 안다고 수익률이 높아지는 건 아니다 — 과도한 뉴스·지표 추적이 오히려 판단을 방해할 수 있다.</b>
+              <span class="detail">계좌 인증하며 "이 종목 대박났다"는 사례는 대부분 결과론(운)일 뿐 재현 가능한 전략이 아님 — 따라 사지 말 것.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>가격이 싼 걸 사는 게 아니라 가치보다 오를 걸 사는 것이다 — 가격(price)과 가치(value)는 다른 개념이다.</b>
+              <span class="detail">주당 1,000원이라도 그 회사가 돈을 못 벌면 비싼 주식이고, 주당 100만원이라도 실질 가치가 그 이상이면 싼 주식. 절대 가격만 보고 "싸다"고 판단하지 말 것.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>초보자는 딱 두 지표만 알면 된다: PBR(주가÷순자산), PER(주가÷순이익). 낮을수록 상대적으로 저평가된 것으로 본다.</b>
+              <span class="detail">PBR: 회사를 다 팔아 빚 갚고 남는 자산(순자산) 대비 시가총액이 몇 배인지. PER: 1년 순이익 대비 시가총액이 몇 배인지. 절대적인 숫자보다 동종업계 유사 기업끼리 비교하는 게 의미 있음(예: 롯데칠성 vs 유사 음료회사).</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>주가 = 이익 × 배수(멀티플). 이익은 비교적 안정적이지만 배수는 감정처럼 크게 출렁인다 — 그래서 "이 회사 이익이 앞으로도 계속 늘 수 있는가"가 가장 중요한 질문이다.</b>
+              <span class="detail">주가만 보고 판단하지 말고, 그 상승/하락이 실제 이익 증가/감소와 같이 가는지를 확인. 이익이 느는 동안의 주가는 상대적으로 안정적인 편.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>뉴스는 "그 회사 이익의 핵심 동인과 직접 연결되는지"를 기준으로 걸러서 봐라 — 무관한 매크로 뉴스에 일희일비하지 마라.</b>
+              <span class="detail">예: 삼성전자·SK하이닉스는 미국 기준금리보다 D램(반도체) 가격이 이익에 훨씬 직접적. 금리 뉴스로 주가가 흔들려도 D램 가격이 오르고 있다면 실제 펀더멘털과는 무관한 노이즈일 수 있음.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>궁금한 섹터의 "주도주"(대장주)를 찾고 싶으면 해당 섹터 ETF의 공시된 종목 구성을 보면 된다 — 비중이 가장 높은 종목이 주도주다.</b>
+              <span class="detail">ETF는 펀드라서 편입 종목과 비중을 홈페이지에 공개함(ETF 포털 등에서 검색). 예: 반도체 ETF에서 비중 1위 종목 = 반도체 주도주.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>내가 잘 모르는 자산은 투자하지 않는다 — 가치 평가를 할 수 없으면 손대지 않는 게 원칙이다.</b>
+              <span class="detail">예시로 든 화자는 "금은 가치평가가 안 되는 영역이라 투자하지 않는다"고 함. 모든 걸 다 알려고 하기보다, 내가 판단할 수 있는 영역만 투자.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>내가 잘 아는 분야일수록 오히려 과신(교만)으로 판단을 그르칠 수 있다 — 전문가·내부자가 자기 회사 주식 투자에 더 취약한 역설.</b>
+              <span class="detail">"남들이 모르는 걸 나만 안다"는 생각이 오히려 객관적 판단(미인대회식 — 남들이 좋아할지)을 방해함. 잘 아는 영역일수록 겸손하게 재검증할 것.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>매매 기록은 딱 4가지만 짧게 적는다: ① 매수 이유 ② 손절 계획(얼마 빠지면 팔지) ③ 보유 중 주가가 변동한 이유 ④ 매도 이유.</b>
+              <span class="detail">일기처럼 짧게 써야 지속 가능하다 — 예: "반도체 수출 증가로 삼성전자 매수. 20만원인데 16만원까지 빠지면 매도." 길게 쓰면 며칠 못 가고 포기하게 됨.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>"언제 살까"보다 "무엇을 살까"를 고민하라 — 좋은 주식이라 확신하면 지금 사고, 빠지면 계획대로 대응하면 된다.</b>
+              <span class="detail">주식은 언제든 사고팔 수 있으니 "더 떨어지면 사야지"라며 미루는 건 의미가 없다(막상 떨어지면 무서워서 더 못 삼). 대신 매수 직후 손절 기준을 지키면 됨.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>장이 시작되고 첫 1시간(9~10시)과 마감 직전은 매매를 피하라 — 심리적 과잉반응이 가장 큰 시간대다.</b>
+              <span class="detail">시가 근처에서는 오르면 더 살까 봐 급히 사고, 빠지면 더 팔까 봐 급히 파는 반응이 몰림. 변동성이 잦아든 시간대(예: 점심 무렵)에 계획한 만큼 차분히 매매. 변동성이 클 때는 시장가 주문도 피할 것(원치 않는 가격에 체결될 수 있음).</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>후보 종목이 두 개라면 반드시 하나만 골라서 사라 — 둘 다 사면 어떤 판단이 맞았는지 "복기"가 불가능해진다.</b>
+              <span class="detail">한 종목을 선택하고 이유를 기록해야, 나중에 그 판단이 맞았는지 틀렸는지 확인하고 배울 수 있음. 두 개를 반씩 사면 그 학습 과정 자체가 사라짐.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>은퇴·노후가 가까워졌다고 무조건 배당주로 갈아탈 필요는 없다 — 오히려 투자 금액 자체를 줄이는 게 리스크 관리로 더 낫다는 관점.</b>
+              <span class="detail">한국 시장에서 안정적인 배당주를 찾기 어렵다는 지적. 노후자금 1억을 배당주에 다 넣는 것보다, 지수 ETF에 일부(예: 2천만원)만 넣어 변동성 노출 자체를 줄이는 편이 안전.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>레버리지·인버스(2~3배) ETF와 선물 거래는 투자가 아니라 투기다 — 장기 투자가 구조적으로 불가능하다.</b>
+              <span class="detail">변동성을 예측·대응하는 게 아니라 변동성 자체에 베팅하는 상품. 매매할 때 도파민이 분비돼 투자를 게임처럼 하게 만드는 게 가장 큰 부작용 — 소액 잦은 매매를 유도하는 증권앱 UI도 같은 맥락에서 경계.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+            <li><b>적게 시작할수록 오히려 오래, 꾸준히 투자할 수 있다 — 큰 돈으로 시작하면 부담 때문에 중간에 포기하기 쉽다.</b>
+              <span class="detail">예: 100만원으로 시작해 연 10%로 30년 복리 운용하면 약 1억 7천만원. 목돈이 없다고 미루지 말고, 감당되는 소액부터 습관을 만드는 게 핵심.</span>
+              <span class="badge">1회 확인</span>
+            </li>
+          </ul>
+          <p class="empty-cat" style="font-style:normal;">
+            📌 <b>시황 의견 참고 (2026년 초 기준, 개인 의견)</b>: 코스피는 PBR 1.6배 수준으로 일본(2.4배)·대만(3.5배)·미국(5.5배) 대비 여전히 저평가라는 시각. "코리아 디스카운트" 원인으로 기업의 낮은 주주환원(배당 부족)과 국내 투자자 자체의 낮은 참여를 꼽고, 최근 상법 개정으로 신뢰 회복 기대감이 반영되는 중이라는 해석. 확신이 없다면 개별종목 대신 코스피200 같은 지수 ETF를 권함. ⚠ 이건 특정 시점의 시장 의견이라 시간이 지나면 유효하지 않을 수 있음 — 절대적 원칙이 아니라 참고용.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <h2 class="serif">학습 노트 <span class="count">유튜브·기사에서 배운 내용 기록</span></h2>
+      <div class="card">
+        <div class="journal-list" id="pfJournalList"></div>
+        <div class="empty" id="pfJournalEmpty">아직 기록된 노트가 없습니다.</div>
+        <div class="journal-form">
+          <label class="field">관련 종목/주제 태그 <input id="pfJTag" placeholder="예: ETF 적립식, 삼성전자 등" /></label>
+          <label class="field">출처 링크 (선택) <input id="pfJLink" placeholder="https://youtube.com/..." /></label>
+          <textarea id="pfJNote" placeholder="배운 점, 판단 근거, 다음에 확인할 것 등을 적어두세요."></textarea>
+          <div class="submit-row"><button class="primary" id="pfBtnAddJournal">노트 추가</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ 파이프라인 ============ -->
+<div class="view" id="view-pl">
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1 class="serif">수입 파이프라인</h1>
+        <div class="sub">본업 외 수입원을 아이디어부터 실제 수입까지 전략 세우고 진행 상황을 추적하는 곳.</div>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><div class="label">전체</div><div class="value num" id="plStatTotal">0</div></div>
+      <div class="stat"><div class="label">진행 중</div><div class="value num" id="plStatActive">0</div></div>
+      <div class="stat"><div class="label">수입 발생 중</div><div class="value num" id="plStatEarning">0</div></div>
+      <div class="stat"><div class="label">합산 월수입</div><div class="value num" id="plStatIncome">₩0</div></div>
+    </div>
+
+    <section>
+      <h2 class="serif">진행 상황 보드</h2>
+      <div class="sub">상태별로 나눠서 한눈에 봅니다. 카드의 "수정"을 누르면 아래 전략 수립 폼에서 편집할 수 있어요.</div>
+      <div class="board" id="plBoard">
+        <div class="lane" data-status="idea">
+          <div class="lane-head idea">아이디어 <span id="plCountIdea">0</span></div>
+          <div class="lane-body" id="plLaneIdea"></div>
+        </div>
+        <div class="lane" data-status="started">
+          <div class="lane-head started">시작함 <span id="plCountStarted">0</span></div>
+          <div class="lane-body" id="plLaneStarted"></div>
+        </div>
+        <div class="lane" data-status="earning">
+          <div class="lane-head earning">수입 발생 <span id="plCountEarning">0</span></div>
+          <div class="lane-body" id="plLaneEarning"></div>
+        </div>
+        <div class="lane" data-status="stopped">
+          <div class="lane-head stopped">중단 <span id="plCountStopped">0</span></div>
+          <div class="lane-body" id="plLaneStopped"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="serif">전략 수립</h2>
+      <div class="sub">새 파이프라인을 추가하거나, 보드에서 "수정"을 눌러 기존 항목을 편집하세요.</div>
+      <div class="card">
+        <div class="pform">
+          <label>이름 <input id="plPName" placeholder="예: 블로그, 스마트스토어, 강의" /></label>
+          <label>상태
+            <select id="plPStatus">
+              <option value="idea">아이디어</option>
+              <option value="started">시작함</option>
+              <option value="earning">수입 발생</option>
+              <option value="stopped">중단</option>
+            </select>
+          </label>
+          <label class="full">목표 (이걸로 뭘 이루고 싶은지, 한 줄)
+            <input id="plPGoal" placeholder="예: 월 30만원 부수입으로 ETF 추가 적립" />
+          </label>
+          <label class="full">다음 액션 (지금 당장 할 일 한 가지)
+            <input id="plPNext" placeholder="예: 블로그 개설하고 글 3개 써보기" />
+          </label>
+          <label>월 수입(선택) <input id="plPIncome" type="number" placeholder="0" /></label>
+          <label>시작일(선택) <input id="plPStart" type="date" /></label>
+          <label class="full">메모
+            <textarea id="plPNote" placeholder="시도해본 것, 배운 것, 막힌 부분 등"></textarea>
+          </label>
+          <div class="submit-row">
+            <span class="hint" id="plFormHint">새 파이프라인 추가</span>
+            <span>
+              <button class="cancel" id="plBtnCancel" style="display:none;">취소</button>
+              <button id="plBtnSave">추가</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="note">
+      데이터는 이 브라우저에 저장됩니다. 다른 기기와 맞추려면 "백업 내보내기"로 저장한 파일을 구글 드라이브 등에 올려두고, 다른 기기에서 "가져오기"로 불러오세요. "저축·수입 다각화" 원칙(지식 정리 탭)과 연결된 실행 트래커예요.
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function toast(msg) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+/* ===================== 클라우드 동기화 (Supabase) ===================== */
+const SUPABASE_URL = "https://ckecoqxwoofdwowvexce.supabase.co";
+const SUPABASE_KEY = "sb_publishable_R8mNY01F0WNzeCvKuPF4EQ_9FD7D5Fm";
+const CLOUD_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1"];
+
+async function cloudGet(id) {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + "/rest/v1/app_state?id=eq." + encodeURIComponent(id) + "&select=data",
+      { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
+    );
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows && rows[0] ? rows[0].data : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function cloudSet(id, data) {
+  try {
+    await fetch(SUPABASE_URL + "/rest/v1/app_state?on_conflict=id", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify({ id, data, updated_at: new Date().toISOString() }),
+    });
+    setSyncIndicator("synced");
+  } catch (e) {
+    setSyncIndicator("offline");
+  }
+}
+
+function cloudSaveKey(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw == null) return;
+    setSyncIndicator("syncing");
+    cloudSet(key, JSON.parse(raw));
+  } catch (e) {}
+}
+
+async function cloudPullAll() {
+  await Promise.all(CLOUD_KEYS.map(async k => {
+    const data = await cloudGet(k);
+    if (data != null) localStorage.setItem(k, JSON.stringify(data));
+  }));
+}
+
+function setSyncIndicator(state) {
+  const el = document.getElementById("syncIndicator");
+  if (!el) return;
+  const label = { syncing: "☁ 동기화 중…", synced: "☁ 동기화됨", offline: "☁ 오프라인 (로컬에만 저장됨)" }[state] || "";
+  el.textContent = label;
+}
+
+(function () {
+  const tabs = document.querySelectorAll(".hub-tabs .tab");
+  tabs.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabs.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+      try { localStorage.setItem("hub_active_view", btn.dataset.view); } catch (e) {}
+      window.scrollTo(0, 0);
+    });
+  });
+  try {
+    const saved = localStorage.getItem("hub_active_view");
+    if (saved) {
+      const btn = document.querySelector('.hub-tabs .tab[data-view="' + saved + '"]');
+      if (btn) btn.click();
+    }
+  } catch (e) {}
+})();
+
+/* ===================== 지식 정리 ===================== */
+function initKnowledgeTodos() {
+  const KEY = "knowledge_todos_v1";
+  const list = document.getElementById("knTodoList");
+  if (!list) return;
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+
+  list.querySelectorAll("li[data-id]").forEach(li => {
+    const id = li.dataset.id;
+    const cb = li.querySelector("input[type=checkbox]");
+    if (done[id]) { cb.checked = true; li.classList.add("done"); }
+    cb.addEventListener("change", () => {
+      done[id] = cb.checked;
+      li.classList.toggle("done", cb.checked);
+      localStorage.setItem(KEY, JSON.stringify(done));
+      cloudSaveKey(KEY);
+    });
+  });
+}
+
+function initKnowledgeSituation() {
+  const KEY = "knowledge_situation_v2";
+  const btn = document.getElementById("knBtnCalc");
+  if (!btn) return;
+  const fields = ["knAge", "knIncome", "knExpense", "knSavings", "knExperience", "knRisk"];
+  const won = n => "₩" + Math.round(n).toLocaleString("ko-KR");
+  const pct = n => n.toFixed(0) + "%";
+
+  const ALLOC_BY_RISK = {
+    stable:     { "ETF": 45, "주식": 10, "코인": 5,  "채권": 30, "현금성": 10 },
+    neutral:    { "ETF": 40, "주식": 25, "코인": 15, "채권": 15, "현금성": 5  },
+    aggressive: { "ETF": 35, "주식": 40, "코인": 20, "채권": 3,  "현금성": 2  },
+  };
+  const ORDER = ["ETF", "주식", "코인", "채권", "현금성"];
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY)) || {};
+    fields.forEach(id => { if (saved[id] != null) document.getElementById(id).value = saved[id]; });
+  } catch (e) {}
+
+  btn.addEventListener("click", () => {
+    const age = Number(document.getElementById("knAge").value) || null;
+    const income = Number(document.getElementById("knIncome").value) || 0;
+    const expense = Number(document.getElementById("knExpense").value) || 0;
+    const savings = Number(document.getElementById("knSavings").value) || 0;
+    const experience = document.getElementById("knExperience").value;
+    const risk = document.getElementById("knRisk").value;
+
+    const data = { knAge: age, knIncome: income, knExpense: expense, knSavings: savings, knExperience: experience, knRisk: risk };
+    localStorage.setItem(KEY, JSON.stringify(data));
+    cloudSaveKey(KEY);
+
+    const result = document.getElementById("knSituationResult");
+    if (!income) {
+      result.innerHTML = "<p>월 소득을 먼저 입력해주세요.</p>";
+      result.classList.add("show");
+      return;
+    }
+
+    const surplus = income - expense;
+    const savingsRate = income ? (surplus / income) * 100 : 0;
+    const emergencyTarget = expense * 3;
+    const hasEmergency = savings >= emergencyTarget;
+    const monthlyInvestable = surplus <= 0 ? 0 : (hasEmergency ? surplus : Math.round(surplus * 0.5));
+
+    let alloc = ALLOC_BY_RISK[risk];
+    const simplifyForBeginner = experience === "none" && monthlyInvestable > 0 && monthlyInvestable < 500000;
+    if (simplifyForBeginner) {
+      alloc = { "ETF": 100, "주식": 0, "코인": 0, "채권": 0, "현금성": 0 };
+    }
+
+    const ageNote = age && age >= 50
+      ? `나이(${age}세)를 고려하면, 위험자산 비중을 이미 서서히 줄여가는 걸 검토할 시점이에요.`
+      : null;
+
+    const monthlyAlloc = ORDER.map(k => ({ key: k, pct: alloc[k], amount: Math.round(monthlyInvestable * alloc[k] / 100) }))
+      .filter(r => r.pct > 0);
+
+    const steps = [];
+    if (surplus <= 0) {
+      steps.push("지금은 투자보다 <b>지출 구조 점검이 먼저</b>입니다. 고정지출이 소득과 같거나 더 많아서, 투자할 여윳돈 자체가 없는 상태예요.");
+      steps.push("가계부를 켜서 지난 1개월 지출 중 줄일 수 있는 항목부터 찾아보세요. 통장을 4개(월급·소비·계절지출·저수지)로 나누는 것부터 시작하면 흐름이 보입니다.");
+    } else {
+      steps.push(savingsRate < 30
+        ? `저축률이 ${pct(savingsRate)}로 목표(30%)에 못 미쳐요. 지출을 줄여 저축률을 올리는 걸 투자보다 먼저 신경 쓰세요.`
+        : `저축률 ${pct(savingsRate)}로 목표(30%)를 이미 넘었습니다.`);
+      steps.push(hasEmergency
+        ? `비상금(생활비 3개월치 ≈ ${won(emergencyTarget)})이 충분해서, 여윳돈 ${won(surplus)} 전액을 투자로 돌릴 수 있어요.`
+        : `비상금이 아직 부족해요(목표 ${won(emergencyTarget)}). 여윳돈의 절반(${won(surplus - monthlyInvestable)})은 비상금부터 채우고, 나머지 ${won(monthlyInvestable)}만 투자로 돌리세요.`);
+      steps.push(experience === "none"
+        ? "ISA 계좌부터 개설하고, 국내 상장 S&P500 ETF 1종목으로 단순하게 시작하세요. 종목·자산군을 늘리는 건 1억 모으고 나서부터로 미뤄도 충분합니다."
+        : "ISA(→ 여유 있으면 연금저축)에서 아래 배분대로 자동이체를 설정하세요.");
+      steps.push('"왜 사는지·얼마나·언제까지"를 한 줄로 적어두고, 매달 같은 날 같은 금액을 사는 루틴을 만드세요.');
+    }
+
+    const allocRows = monthlyAlloc.map(r => `
+      <div class="alloc-mini-row">
+        <div>${r.key}</div>
+        <div class="alloc-mini-track"><div class="alloc-mini-fill" style="width:${r.pct}%"></div></div>
+        <div class="num" style="text-align:right;">${r.pct}%</div>
+      </div>
+    `).join("");
+
+    const monthlyRows = monthlyAlloc.map(r => `<tr><td>${r.key}</td><td>${won(r.amount)}</td></tr>`).join("");
+
+    result.innerHTML = `
+      <h3>맞춤 전략 요약</h3>
+      <p>월 여윳돈 <b>${won(surplus)}</b> 중 <b>${won(monthlyInvestable)}</b>을 투자에 배분합니다${simplifyForBeginner ? " (경험이 없어서 처음엔 ETF 하나로 단순화했어요)" : ""}.</p>
+      ${ageNote ? `<p class="caution" style="color:var(--warn);">⚠ ${ageNote}</p>` : ""}
+
+      <h4>자산배분 (${risk === "stable" ? "안정형" : risk === "aggressive" ? "공격형" : "중립형"})</h4>
+      ${allocRows}
+
+      <h4>월별 배분 금액</h4>
+      <table class="monthly-table">
+        ${monthlyRows}
+        <tr><td>합계</td><td>${won(monthlyInvestable)}</td></tr>
+      </table>
+
+      <h4>실행 순서</h4>
+      <ol>${steps.map(s => `<li>${s}</li>`).join("")}</ol>
+
+      <div class="calc-note">계산 근거: 저축률 30%+ · 비상금 3개월치 · 리스크 성향별 배분 비율 · "경험 없으면 ETF 1종목부터" — 모두 위 카테고리에 정리된 원칙을 그대로 적용했습니다. 실제 매수·계좌 개설은 직접 진행해주세요. 전문 자문이 아닙니다.</div>
+    `;
+    result.classList.add("show");
+  });
+}
+
+/* ===================== 포트폴리오 ===================== */
+function initPortfolio() {
+  const btnAddPos = document.getElementById("pfBtnAddPos");
+  if (!btnAddPos) return;
+
+  const STORAGE_KEY = "ledger_portfolio_v1";
+  const ALLOC_TARGETS_DEFAULT = { "주식": 25, "ETF": 40, "코인": 15, "채권": 15, "현금성": 5 };
+  const ASSET_ORDER = ["주식", "ETF", "코인", "채권", "현금성"];
+  const SETTINGS_DEFAULT = { stopLossPct: 10, trailingStopPct: 10 };
+
+  const fmtWon = n => "₩" + Math.round(n).toLocaleString("ko-KR");
+  const fmtPct = n => (n > 0 ? "+" : "") + n.toFixed(1) + "%";
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  let state = load();
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          positions: (parsed.positions || []).map(p => ({ peak: Math.max(Number(p.buy) || 0, Number(p.current) || 0), ...p })),
+          journal: parsed.journal || [],
+          principles: parsed.principles || [],
+          allocTargets: Object.assign({}, ALLOC_TARGETS_DEFAULT, parsed.allocTargets || {}),
+          settings: Object.assign({}, SETTINGS_DEFAULT, parsed.settings || {}),
+          lastUpdated: parsed.lastUpdated || null,
+        };
+      }
+    } catch (e) {}
+    return { positions: [], journal: [], principles: [], allocTargets: Object.assign({}, ALLOC_TARGETS_DEFAULT), settings: Object.assign({}, SETTINGS_DEFAULT), lastUpdated: null };
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    cloudSaveKey(STORAGE_KEY);
+  }
+
+  // 손절가 미지정 시 매수가 기준 기본 손절률(-stopLossPct%)을 사용하고,
+  // 한 번이라도 고점(peak)이 매수가보다 높았다면 고점 대비 추적손절률도 함께 확인한다.
+  function positionStatus(p) {
+    const cur = Number(p.current);
+    const buy = Number(p.buy);
+    const peak = Number(p.peak) || Math.max(buy, cur);
+    const target = p.target === "" || p.target == null ? null : Number(p.target);
+    const explicitStop = p.stop === "" || p.stop == null ? null : Number(p.stop);
+    const effectiveStop = explicitStop != null ? explicitStop : buy * (1 - state.settings.stopLossPct / 100);
+    const trailingFloor = peak * (1 - state.settings.trailingStopPct / 100);
+
+    if (target != null && cur >= target) return { key: "take-profit", label: "🎯 익절 검토" };
+    if (peak > buy && cur <= trailingFloor) {
+      const dropFromPeak = ((peak - cur) / peak) * 100;
+      return { key: "take-profit", label: `📉 추적손절 검토 (고점 대비 -${dropFromPeak.toFixed(1)}%)` };
+    }
+    if (cur <= effectiveStop) {
+      return { key: "stop-loss", label: explicitStop != null ? "⛔ 손절 검토" : `⛔ 손절 검토 (기본 -${state.settings.stopLossPct}%)` };
+    }
+    if (effectiveStop > 0 && (cur - effectiveStop) / effectiveStop <= 0.05) {
+      return { key: "watch", label: "⚠ 주의 (손절 근접)" };
+    }
+    return { key: "hold", label: "보유중" };
+  }
+
+  function render() {
+    document.getElementById("pfStopLossPct").value = state.settings.stopLossPct;
+    document.getElementById("pfTrailingPct").value = state.settings.trailingStopPct;
+    renderStats();
+    renderAlloc();
+    renderPositions();
+    renderPrinciples();
+    renderJournal();
+    document.getElementById("pfLastUpdated").textContent = state.lastUpdated
+      ? new Date(state.lastUpdated).toLocaleString("ko-KR")
+      : "직접 입력";
+  }
+
+  document.getElementById("pfStopLossPct").addEventListener("change", e => {
+    const v = Number(e.target.value);
+    state.settings.stopLossPct = isFinite(v) && v > 0 ? v : SETTINGS_DEFAULT.stopLossPct;
+    save();
+    render();
+  });
+  document.getElementById("pfTrailingPct").addEventListener("change", e => {
+    const v = Number(e.target.value);
+    state.settings.trailingStopPct = isFinite(v) && v > 0 ? v : SETTINGS_DEFAULT.trailingStopPct;
+    save();
+    render();
+  });
+
+  function renderStats() {
+    let cost = 0, value = 0, alerts = 0;
+    state.positions.forEach(p => {
+      cost += Number(p.qty) * Number(p.buy);
+      value += Number(p.qty) * Number(p.current);
+      const s = positionStatus(p);
+      if (s.key !== "hold") alerts++;
+    });
+    const pl = value - cost;
+    document.getElementById("pfStatCost").textContent = fmtWon(cost);
+    document.getElementById("pfStatValue").textContent = fmtWon(value);
+    const plEl = document.getElementById("pfStatPL");
+    plEl.textContent = fmtWon(pl) + (cost ? "  (" + fmtPct((pl / cost) * 100) + ")" : "");
+    plEl.className = "value num " + (pl > 0 ? "gain" : pl < 0 ? "loss" : "");
+    document.getElementById("pfStatAlerts").textContent = alerts;
+  }
+
+  function renderAlloc() {
+    const sums = {};
+    ASSET_ORDER.forEach(a => (sums[a] = 0));
+    let total = 0;
+    state.positions.forEach(p => {
+      const v = Number(p.qty) * Number(p.current);
+      sums[p.assetClass] = (sums[p.assetClass] || 0) + v;
+      total += v;
+    });
+    const card = document.getElementById("pfAllocCard");
+    card.innerHTML = "";
+    ASSET_ORDER.forEach(cls => {
+      const actualPct = total ? (sums[cls] / total) * 100 : 0;
+      const targetPct = state.allocTargets[cls] ?? 0;
+      const row = document.createElement("div");
+      row.className = "alloc-row";
+      row.innerHTML = `
+        <div>${cls}</div>
+        <div class="alloc-bar-track">
+          <div class="alloc-bar-fill" style="width:${Math.min(actualPct, 100)}%"></div>
+          <div class="alloc-bar-target" style="left:${Math.min(targetPct, 100)}%"></div>
+        </div>
+        <div class="num right">${actualPct.toFixed(1)}%</div>
+        <div class="alloc-target-input">목표
+          <input type="number" min="0" max="100" data-cls="${cls}" value="${targetPct}" />%
+        </div>
+      `;
+      card.appendChild(row);
+    });
+    card.querySelectorAll("input[data-cls]").forEach(inp => {
+      inp.addEventListener("change", () => {
+        state.allocTargets[inp.dataset.cls] = Number(inp.value) || 0;
+        save();
+      });
+    });
+  }
+
+  function renderPositions() {
+    const body = document.getElementById("pfPosBody");
+    const empty = document.getElementById("pfPosEmpty");
+    body.innerHTML = "";
+    document.getElementById("pfPosCount").textContent = state.positions.length ? `(${state.positions.length}개)` : "";
+    empty.style.display = state.positions.length ? "none" : "block";
+
+    state.positions.forEach(p => {
+      const costAmt = Number(p.qty) * Number(p.buy);
+      const valAmt = Number(p.qty) * Number(p.current);
+      const pl = valAmt - costAmt;
+      const plPct = costAmt ? (pl / costAmt) * 100 : 0;
+      const status = positionStatus(p);
+      const effectiveStopLabel = (p.stop !== "" && p.stop != null)
+        ? fmtWon(p.stop)
+        : `${fmtWon(Number(p.buy) * (1 - state.settings.stopLossPct / 100))} (기본)`;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="asset-tag">${p.assetClass}</span></td>
+        <td>${escapeHtml(p.name)}</td>
+        <td class="right">${p.horizon}</td>
+        <td class="right num">${Number(p.qty).toLocaleString("ko-KR")}</td>
+        <td class="right num">${fmtWon(p.buy)}</td>
+        <td class="right num"><input type="number" step="any" class="cur-edit" data-id="${p.id}" value="${p.current}" style="width:90px; text-align:right;" /></td>
+        <td class="right num">${fmtWon(p.peak)}</td>
+        <td class="right num">${fmtWon(costAmt)}</td>
+        <td class="right num">${fmtWon(valAmt)}</td>
+        <td class="right num pl ${pl > 0 ? "gain" : pl < 0 ? "loss" : ""}">${fmtWon(pl)}<br><span style="font-size:.72rem">${fmtPct(plPct)}</span></td>
+        <td class="right num">${p.target !== "" && p.target != null ? fmtWon(p.target) : "—"}</td>
+        <td class="right num">${effectiveStopLabel}</td>
+        <td><span class="pill ${status.key}">${status.label}</span></td>
+        <td><button class="row-del" data-id="${p.id}" title="삭제">✕</button></td>
+      `;
+      body.appendChild(tr);
+    });
+
+    body.querySelectorAll(".row-del").forEach(b => {
+      b.addEventListener("click", () => {
+        state.positions = state.positions.filter(p => p.id !== b.dataset.id);
+        save();
+        render();
+      });
+    });
+
+    body.querySelectorAll(".cur-edit").forEach(inp => {
+      inp.addEventListener("change", () => {
+        const pos = state.positions.find(x => x.id === inp.dataset.id);
+        if (!pos) return;
+        const newCur = Number(inp.value);
+        if (!isFinite(newCur) || newCur <= 0) return;
+        pos.current = newCur;
+        pos.peak = Math.max(Number(pos.peak) || 0, newCur, Number(pos.buy) || 0);
+        save();
+        render();
+        toast(pos.name + " 현재가 갱신됨");
+      });
+    });
+  }
+
+  function renderJournal() {
+    const list = document.getElementById("pfJournalList");
+    const empty = document.getElementById("pfJournalEmpty");
+    list.innerHTML = "";
+    empty.style.display = state.journal.length ? "none" : "block";
+    [...state.journal].reverse().forEach(j => {
+      const div = document.createElement("div");
+      div.className = "journal-item";
+      div.innerHTML = `
+        <div class="meta">
+          <span>${new Date(j.date).toLocaleDateString("ko-KR")} ${j.tag ? `· <span class="tag">${escapeHtml(j.tag)}</span>` : ""}</span>
+          ${j.link ? `<a href="${escapeAttr(j.link)}" target="_blank" rel="noopener noreferrer">출처 ↗</a>` : ""}
+        </div>
+        <p>${escapeHtml(j.note)}</p>
+        <div class="item-actions">
+          <button class="small ghost" data-promote="${j.id}">핵심 원칙으로 등록</button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+    list.querySelectorAll("[data-promote]").forEach(b => {
+      b.addEventListener("click", () => promoteToPrinciple(b.dataset.promote));
+    });
+  }
+
+  function promoteToPrinciple(journalId) {
+    const j = state.journal.find(x => x.id === journalId);
+    if (!j) return;
+    const tagKey = (j.tag || "미분류").trim().toLowerCase();
+    let existing = state.principles.find(p => p.tagKey === tagKey);
+    if (existing) {
+      existing.count += 1;
+      existing.lastSeen = j.date;
+      if (!existing.sources.includes(j.id)) existing.sources.push(j.id);
+      if (!existing.notes.includes(j.note)) existing.notes.push(j.note);
+    } else {
+      state.principles.push({
+        id: uid(),
+        tagKey,
+        tag: j.tag || "미분류",
+        count: 1,
+        firstSeen: j.date,
+        lastSeen: j.date,
+        sources: [j.id],
+        notes: [j.note],
+      });
+    }
+    save();
+    render();
+    toast("핵심 원칙에 반영됨 (" + tagKey + ")");
+  }
+
+  function renderPrinciples() {
+    const list = document.getElementById("pfPrincipleList");
+    const empty = document.getElementById("pfPrincipleEmpty");
+    list.innerHTML = "";
+    const sorted = [...state.principles].sort((a, b) => b.count - a.count);
+    empty.style.display = sorted.length ? "none" : "block";
+    sorted.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "principle-item";
+      const latestNote = p.notes[p.notes.length - 1];
+      div.innerHTML = `
+        <div class="count-badge">${p.count}</div>
+        <div class="body">
+          <span class="tag">${escapeHtml(p.tag)}</span>
+          <span class="seen">${p.count}회 확인 · 최근 ${new Date(p.lastSeen).toLocaleDateString("ko-KR")}</span>
+          <p>${escapeHtml(latestNote)}</p>
+          ${p.count === 1 ? '<div class="caution">⚠ 아직 1회만 확인됨 — 반복되면 신뢰도가 올라갑니다</div>' : ""}
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function escapeAttr(s) {
+    return String(s ?? "").replace(/"/g, "&quot;");
+  }
+
+  btnAddPos.addEventListener("click", () => {
+    const name = document.getElementById("pfFName").value.trim();
+    const qty = document.getElementById("pfFQty").value;
+    const buy = document.getElementById("pfFBuy").value;
+    const cur = document.getElementById("pfFCur").value || buy;
+    if (!name || !qty || !buy) {
+      toast("종목명, 수량, 매수가는 필수입니다.");
+      return;
+    }
+    state.positions.push({
+      id: uid(),
+      assetClass: document.getElementById("pfFAssetClass").value,
+      name,
+      horizon: document.getElementById("pfFHorizon").value,
+      qty: Number(qty),
+      buy: Number(buy),
+      current: Number(cur),
+      peak: Math.max(Number(buy), Number(cur)),
+      target: document.getElementById("pfFTarget").value === "" ? null : Number(document.getElementById("pfFTarget").value),
+      stop: document.getElementById("pfFStop").value === "" ? null : Number(document.getElementById("pfFStop").value),
+    });
+    ["pfFName", "pfFQty", "pfFBuy", "pfFCur", "pfFTarget", "pfFStop"].forEach(id => (document.getElementById(id).value = ""));
+    save();
+    render();
+    toast(name + " 추가됨");
+  });
+
+  document.getElementById("pfBtnAddJournal").addEventListener("click", () => {
+    const note = document.getElementById("pfJNote").value.trim();
+    if (!note) {
+      toast("내용을 입력해주세요.");
+      return;
+    }
+    state.journal.push({
+      id: uid(),
+      date: new Date().toISOString(),
+      tag: document.getElementById("pfJTag").value.trim(),
+      link: document.getElementById("pfJLink").value.trim(),
+      note,
+    });
+    ["pfJTag", "pfJLink", "pfJNote"].forEach(id => (document.getElementById(id).value = ""));
+    save();
+    render();
+    toast("노트가 저장되었습니다");
+  });
+
+  document.getElementById("pfBtnHowRefresh").addEventListener("click", () => {
+    toast("Claude에게 \"시세 갱신해줘\"라고 요청하면 최신가를 반영해 드립니다");
+  });
+
+  render();
+}
+
+/* ===================== 파이프라인 ===================== */
+function initPipeline() {
+  const btnSave = document.getElementById("plBtnSave");
+  if (!btnSave) return;
+
+  const KEY = "income_pipeline_v1";
+  const won = n => "₩" + Math.round(n).toLocaleString("ko-KR");
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const STATUS_LABEL = { idea: "아이디어", started: "시작함", earning: "수입 발생", stopped: "중단" };
+  const LANE_ID = { idea: "plLaneIdea", started: "plLaneStarted", earning: "plLaneEarning", stopped: "plLaneStopped" };
+  const COUNT_ID = { idea: "plCountIdea", started: "plCountStarted", earning: "plCountEarning", stopped: "plCountStopped" };
+
+  let items = [];
+  try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) {}
+  let editingId = null;
+
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(items));
+    cloudSaveKey(KEY);
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function render() {
+    Object.values(LANE_ID).forEach(id => (document.getElementById(id).innerHTML = ""));
+    const counts = { idea: 0, started: 0, earning: 0, stopped: 0 };
+    let totalIncome = 0;
+
+    items.forEach(p => {
+      counts[p.status]++;
+      if (p.status === "earning") totalIncome += Number(p.income) || 0;
+
+      const el = document.createElement("div");
+      el.className = "p-card";
+      el.innerHTML = `
+        <div class="p-name">${escapeHtml(p.name)}</div>
+        ${p.goal ? `<div class="p-goal">${escapeHtml(p.goal)}</div>` : ""}
+        ${p.next ? `<div class="p-next"><b>다음:</b> ${escapeHtml(p.next)}</div>` : ""}
+        ${p.income ? `<div class="p-income">${won(p.income)}/월</div>` : ""}
+        ${p.start ? `<div class="p-meta">시작 ${escapeHtml(p.start)}</div>` : ""}
+        <div class="p-actions">
+          <button data-edit="${p.id}">수정</button>
+          <button class="danger" data-del="${p.id}">삭제</button>
+        </div>
+      `;
+      document.getElementById(LANE_ID[p.status]).appendChild(el);
+    });
+
+    Object.keys(counts).forEach(k => (document.getElementById(COUNT_ID[k]).textContent = counts[k]));
+    Object.keys(LANE_ID).forEach(k => {
+      const lane = document.getElementById(LANE_ID[k]);
+      if (!lane.children.length) lane.innerHTML = '<div class="lane-empty">없음</div>';
+    });
+
+    document.getElementById("plStatTotal").textContent = items.length;
+    document.getElementById("plStatActive").textContent = counts.started + counts.earning;
+    document.getElementById("plStatEarning").textContent = counts.earning;
+    document.getElementById("plStatIncome").textContent = won(totalIncome);
+
+    document.querySelectorAll("#view-pl [data-edit]").forEach(b => {
+      b.addEventListener("click", () => startEdit(b.dataset.edit));
+    });
+    document.querySelectorAll("#view-pl [data-del]").forEach(b => {
+      b.addEventListener("click", () => {
+        items = items.filter(p => p.id !== b.dataset.del);
+        if (editingId === b.dataset.del) resetForm();
+        save();
+        render();
+      });
+    });
+  }
+
+  function startEdit(id) {
+    const p = items.find(x => x.id === id);
+    if (!p) return;
+    editingId = id;
+    document.getElementById("plPName").value = p.name || "";
+    document.getElementById("plPStatus").value = p.status || "idea";
+    document.getElementById("plPGoal").value = p.goal || "";
+    document.getElementById("plPNext").value = p.next || "";
+    document.getElementById("plPIncome").value = p.income || "";
+    document.getElementById("plPStart").value = p.start || "";
+    document.getElementById("plPNote").value = p.note || "";
+    document.getElementById("plFormHint").textContent = `"${p.name}" 수정 중`;
+    document.getElementById("plBtnSave").textContent = "저장";
+    document.getElementById("plBtnCancel").style.display = "inline-block";
+    document.querySelector("#view-pl .card").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function resetForm() {
+    editingId = null;
+    ["plPName", "plPGoal", "plPNext", "plPIncome", "plPStart", "plPNote"].forEach(id => (document.getElementById(id).value = ""));
+    document.getElementById("plPStatus").value = "idea";
+    document.getElementById("plFormHint").textContent = "새 파이프라인 추가";
+    document.getElementById("plBtnSave").textContent = "추가";
+    document.getElementById("plBtnCancel").style.display = "none";
+  }
+
+  btnSave.addEventListener("click", () => {
+    const name = document.getElementById("plPName").value.trim();
+    if (!name) return;
+    const data = {
+      name,
+      status: document.getElementById("plPStatus").value,
+      goal: document.getElementById("plPGoal").value.trim(),
+      next: document.getElementById("plPNext").value.trim(),
+      income: Number(document.getElementById("plPIncome").value) || 0,
+      start: document.getElementById("plPStart").value,
+      note: document.getElementById("plPNote").value.trim(),
+    };
+    if (editingId) {
+      const idx = items.findIndex(p => p.id === editingId);
+      if (idx >= 0) items[idx] = { ...items[idx], ...data };
+    } else {
+      items.push({ id: uid(), ...data });
+    }
+    save();
+    resetForm();
+    render();
+  });
+
+  document.getElementById("plBtnCancel").addEventListener("click", resetForm);
+
+  render();
+}
+
+/* ===================== 전체 백업 (지식정리+포트폴리오+파이프라인, 수동 파일 백업용) ===================== */
+(function () {
+  const ALL_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1"];
+  const exportBtn = document.getElementById("hubBtnExport");
+  if (!exportBtn) return;
+
+  exportBtn.addEventListener("click", async () => {
+    const payload = {};
+    ALL_KEYS.forEach(k => {
+      try { payload[k] = JSON.parse(localStorage.getItem(k)); } catch (e) { payload[k] = null; }
+    });
+    const data = JSON.stringify(payload, null, 2);
+    const filename = "investment-hub-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    try {
+      if (window.claude && window.claude.downloads) {
+        await window.claude.downloads.save({ filename, data });
+        toast("전체 백업 파일 저장 요청을 보냈습니다");
+      } else {
+        throw new Error("no downloads api");
+      }
+    } catch (e) {
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  });
+
+  document.getElementById("hubBtnImportTrigger").addEventListener("click", () => {
+    document.getElementById("hubFileImport").click();
+  });
+  document.getElementById("hubFileImport").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        let count = 0;
+        ALL_KEYS.forEach(k => {
+          if (parsed[k] != null) {
+            localStorage.setItem(k, JSON.stringify(parsed[k]));
+            cloudSaveKey(k);
+            count++;
+          }
+        });
+        toast(`전체 백업을 불러왔습니다 (${count}개 항목) — 새로고침합니다`);
+        setTimeout(() => location.reload(), 900);
+      } catch (err) {
+        toast("파일을 읽을 수 없습니다");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+})();
+
+/* ===================== 부트스트랩: 클라우드에서 먼저 불러온 뒤 각 화면 초기화 ===================== */
+(async function bootstrap() {
+  setSyncIndicator("syncing");
+  await cloudPullAll();
+  setSyncIndicator("synced");
+  initKnowledgeTodos();
+  initKnowledgeSituation();
+  initPortfolio();
+  initPipeline();
+})();
+</script>
