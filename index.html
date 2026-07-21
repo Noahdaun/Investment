@@ -50,15 +50,35 @@
     position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center;
     gap: 8px; flex-wrap: wrap; padding: 14px 20px; background: var(--bg); border-bottom: 1px solid var(--border);
   }
-  .hub-tabs .tab-group, .hub-tabs .backup-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hub-tabs .tab-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .hub-tabs .backup-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .hub-tabs button {
     font: inherit; cursor: pointer; font-size: 0.85rem; padding: 7px 15px; border-radius: 999px;
     border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted);
   }
   .hub-tabs .tab-group button.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
   .hub-tabs .tab-group button:not(.active):hover { border-color: var(--accent); color: var(--accent); }
-  .hub-tabs .backup-group button { color: var(--ink); }
-  .hub-tabs .backup-group button:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sync-badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--ink-muted);
+    padding: 4px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .sync-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-muted); flex: none; }
+  .sync-badge.synced { color: var(--gain); border-color: var(--gain-weak); background: var(--gain-weak); }
+  .sync-badge.synced .dot { background: var(--gain); }
+  .sync-badge.syncing .dot { background: var(--warn); animation: pulse 1s infinite; }
+  .sync-badge.offline { color: var(--loss); border-color: var(--loss-weak); background: var(--loss-weak); }
+  .sync-badge.offline .dot { background: var(--loss); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .backup-group .manual-label {
+    font-size: 0.72rem; color: var(--ink-muted);
+  }
+  .backup-group button.link-btn {
+    background: none; border: none; color: var(--ink-muted); text-decoration: underline;
+    padding: 4px 2px; font-size: 0.76rem; border-radius: 0;
+  }
+  .backup-group button.link-btn:hover { color: var(--accent); }
   .hub-tabs .backup-group input[type="file"] { display: none; }
 
   .view { display: none; }
@@ -370,10 +390,11 @@
     <button class="tab" data-view="pl">🚀 파이프라인</button>
   </div>
   <div class="backup-group">
-    <span id="syncIndicator" style="font-size:0.78rem; color:var(--ink-muted); align-self:center;"></span>
-    <button id="hubBtnImportTrigger">파일에서 가져오기</button>
+    <span class="sync-badge" id="syncIndicator"><span class="dot"></span><span class="label">연결 중…</span></span>
+    <span class="manual-label">수동 백업(선택)</span>
+    <button class="link-btn" id="hubBtnImportTrigger">파일에서 복원</button>
     <input type="file" id="hubFileImport" accept="application/json" />
-    <button id="hubBtnExport">파일로 내보내기</button>
+    <button class="link-btn" id="hubBtnExport">파일로 저장</button>
   </div>
 </div>
 
@@ -731,7 +752,7 @@
 
     <footer class="note">
       보내주신 자료를 제가 읽고 요약·분류한 결과입니다. 투자 자문이 아니니 실제 결정 전엔 다른 출처도 함께 확인하세요.
-      다른 기기와 맞추려면 "백업 내보내기" 파일을 구글 드라이브 등에 올려두고 다른 기기에서 "가져오기"로 불러오세요.
+      다른 기기와는 자동으로 동기화됩니다(상단 "자동 저장 중" 표시 확인). 상단의 "파일로 저장/파일에서 복원"은 만약을 위한 수동 백업용이라 평소엔 안 쓰셔도 돼요.
     </footer>
   </div>
 </div>
@@ -1019,7 +1040,7 @@
     </section>
 
     <footer class="note">
-      데이터는 이 브라우저에 저장됩니다. 다른 기기와 맞추려면 "백업 내보내기"로 저장한 파일을 구글 드라이브 등에 올려두고, 다른 기기에서 "가져오기"로 불러오세요. "저축·수입 다각화" 원칙(지식 정리 탭)과 연결된 실행 트래커예요.
+      다른 기기와는 자동으로 동기화됩니다. "저축·수입 다각화" 원칙(지식 정리 탭)과 연결된 실행 트래커예요.
     </footer>
   </div>
 </div>
@@ -1092,8 +1113,10 @@ async function cloudPullAll() {
 function setSyncIndicator(state) {
   const el = document.getElementById("syncIndicator");
   if (!el) return;
-  const label = { syncing: "☁ 동기화 중…", synced: "☁ 동기화됨", offline: "☁ 오프라인 (로컬에만 저장됨)" }[state] || "";
-  el.textContent = label;
+  const label = { syncing: "동기화 중…", synced: "자동 저장 중", offline: "오프라인 — 이 기기에만 저장됨" }[state] || "연결 중…";
+  el.className = "sync-badge" + (state ? " " + state : "");
+  const labelEl = el.querySelector(".label");
+  if (labelEl) labelEl.textContent = label;
 }
 
 (function () {
