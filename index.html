@@ -171,6 +171,16 @@
   #view-kn .monthly-table td:last-child { text-align: right; font-weight: 600; }
   #view-kn .monthly-table tr:last-child td { border-bottom: none; font-weight: 700; }
 
+  #view-kn .gr-band-name { font-size: 1rem; font-weight: 700; margin: 2px 0 4px; }
+  #view-kn .gr-band-warn { color: var(--warn); font-weight: 600; }
+  #view-kn .gr-tips { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 0.86rem; }
+  #view-kn .gr-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-top: 4px; }
+  #view-kn .gr-table th, #view-kn .gr-table td { padding: 6px 4px; border-bottom: 1px dashed var(--border); text-align: right; }
+  #view-kn .gr-table th:first-child, #view-kn .gr-table td:first-child { text-align: left; }
+  #view-kn .gr-table th { color: var(--ink-muted); font-weight: 600; font-size: 0.78rem; }
+  #view-kn .gr-chart-wrap { margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px 4px; }
+  #view-kn .gr-chart-wrap svg { display: block; width: 100%; height: auto; }
+
   #view-kn .action-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
     box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 14px;
@@ -663,6 +673,18 @@
     </div>
 
     <div class="action-card">
+      <h2 class="serif">🎯 목표 수익률 설계기</h2>
+      <div class="sub">원하는 연평균 수익률을 넣으면, 지금까지 정리된 자산군별 역사적 수익률(S&amp;P500 약 10~16%, 나스닥100 약 13~18%, 채권 약 3~4%, 현금성 약 2~3% 등)을 기준으로 그 수익률에 가까운 배분과 주의할 점을 알려드리고, 연차별로 얼마가 되는지 표와 그래프로 보여드려요. 실제 수익률은 매년 크게 출렁이며 이 값이 보장되지 않습니다 — 장기 평균 기준의 참고치입니다.</div>
+      <div class="situation-form">
+        <label>목표 연평균 수익률(%) <input type="number" id="grTargetRate" placeholder="예: 9" step="0.5" /></label>
+        <label>월 투자금액 <input type="text" inputmode="numeric" class="money-input" id="grMonthly" placeholder="예: 500,000" /></label>
+        <label>현재 모은 투자금(선택) <input type="text" inputmode="numeric" class="money-input" id="grStart" placeholder="예: 3,000,000" /></label>
+        <div class="submit-row"><button id="grBtnCalc">설계하기</button></div>
+      </div>
+      <div class="situation-result" id="grResult"></div>
+    </div>
+
+    <div class="action-card">
       <h2 class="serif">목표치</h2>
       <div class="sub">쌓인 자료를 바탕으로 잡은 기준선입니다. 새 자료가 이 숫자를 바꾸면 여기서 바로 고칩니다.</div>
       <table class="goals">
@@ -706,7 +728,7 @@
     </div>
 
     <details class="category" open>
-      <summary>복리 · 꾸준함 <span class="n">(4)</span><span class="chev">▸</span></summary>
+      <summary>복리 · 꾸준함 <span class="n">(5)</span><span class="chev">▸</span></summary>
       <div class="cat-body">
         <ul class="points">
           <li><b>정해진 돈을 꾸준히 넣으면 시간이 대부분을 벌어준다.</b>
@@ -726,12 +748,16 @@
             <span class="detail">2007년 버핏이 헤지펀드 매니저와 100만 달러(약 14억원) 내기: "10년간 S&amp;P500 인덱스가 전문 운용 헤지펀드보다 수익률이 높을 것이다." 결과는 S&amp;P500의 압승. 액티브 운용(종목 골라서 사고파는 것)이 장기적으로 그냥 시장 전체를 사서 버티는 것보다 나은 경우가 드물다는 근거.</span>
             <span class="badge">1회 확인</span>
           </li>
+          <li><b>"72의 법칙": 72 ÷ 연 수익률(%) = 원금이 두 배 되는 데 걸리는 년수.</b>
+            <span class="detail">연 6%면 12년마다, 연 12%면 6년마다 자산이 두 배가 됨. "돈은 잠들지 않는다(Money never sleeps)" — 주말에도 이자·수익이 붙는다는 의미. 투자 기간이 길어질수록, 투자 금액이 커질수록 복리 효과가 기하급수적으로 커짐.</span>
+            <span class="badge">1회 확인</span>
+          </li>
         </ul>
       </div>
     </details>
 
     <details class="category" open>
-      <summary>잃지 않는 법 <span class="n">(7)</span><span class="chev">▸</span></summary>
+      <summary>잃지 않는 법 <span class="n">(9)</span><span class="chev">▸</span></summary>
       <div class="cat-body">
         <ul class="points">
           <li><b>크게 버는 것보다 크게 잃지 않는 게 훨씬 중요하다.</b>
@@ -757,6 +783,14 @@
           </li>
           <li><b>은퇴가 가까워질수록 위험자산 비중을 낮춰야 한다 — 그 시점엔 손실이 나도 복구할 시간이 없다.</b>
             <span class="detail">지금(자산을 불리는 시기)과 노후(자산을 지키는 시기)는 다른 전략이 필요하다는 원칙. 지금 당장 적용할 건 아니지만 나이가 들수록 참고.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>가장 위험한 순간은 손실 났을 때가 아니라 "처음 수익이 났을 때"다.</b>
+            <span class="detail">소액으로 시작해 처음 이익을 보면 "이렇게 하니까 오르네"라며 과욕이 생겨 무리하게 큰돈을 넣다가 실패하는 패턴이 흔함. 처음 손실은 그냥 수업료지만, 처음 성공은 다음 실수의 씨앗이 될 수 있음.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>위기는 이미 대비하고 있던 익숙한 경로가 아니라, 방심하고 있던 곳에서 터진다 — 그래도 위기는 반드시 다시 온다는 전제로 대비해야 한다.</b>
+            <span class="detail">외환위기·금융위기·코로나 모두 사람들이 예상 못 한 지점에서 시작됨. 탐욕과 공포의 사이클은 인간 본성이라 시대가 바뀌어도 반복됨 — "온다 vs 안 온다"가 아니라 "언제 올지 모르니 항상 분산·헤지 자산을 유지"하는 게 핵심.</span>
             <span class="badge">1회 확인</span>
           </li>
         </ul>
@@ -817,7 +851,7 @@
     </div>
 
     <details class="category" open>
-      <summary>자산배분 · 계좌 <span class="n">(8)</span><span class="chev">▸</span></summary>
+      <summary>자산배분 · 계좌 <span class="n">(12)</span><span class="chev">▸</span></summary>
       <div class="cat-body">
         <ul class="points">
           <li><b>한 곳에 몰빵하지 말고 주식·채권 등으로 분산하라 — 그래야 흔들려도 끝까지 버틸 수 있다.</b>
@@ -825,8 +859,24 @@
             <span class="badge">1회 확인</span>
           </li>
           <li><b>계좌는 ISA → 연금저축 → 일반계좌 순서로 활용하라.</b>
-            <span class="detail">ISA: 연 200만원까지 비과세, 초과분은 9.9%만 과세(원래 15.4%). 단 ISA는 국내 상장 ETF만 가능 — 해외 상장 ETF(SPY 등)는 ISA에 못 담음. 연금저축: 연 최대 600만원 납입 시 16.5% 세액공제(최대 99만원 환급), 단 55세까지 인출 불가. 초보자·월 30~50만원대는 ISA부터, 여유 있으면 연금저축까지.</span>
-            <span class="badge">3회 확인</span>
+            <span class="detail">ISA: 연 200만원까지 비과세, 초과분은 9.9%만 과세(원래 15.4%). 단 ISA는 국내 상장 ETF만 가능 — 해외 상장 ETF(SPY 등)는 ISA에 못 담음. 연금저축: 연 최대 600만원 납입 시 16.5% 세액공제(최대 99만원 환급), 단 55세까지 인출 불가. 초보자·월 30~50만원대는 ISA부터, 여유 있으면 연금저축까지. 국민연금 액수는 불확실해도 노후에 돈이 필요하다는 사실 자체는 확실하니, 연금저축·IRP 같은 개인연금으로 스스로 보완하는 게 필수 — 세제혜택 덕에 자연스럽게 장기 보유하게 되는 효과도 있음.</span>
+            <span class="badge">4회 확인</span>
+          </li>
+          <li><b>뉴스 보고 "달러가 좋대, 엔화가 좋대"하며 자산을 옮겨 다니지 마라 — 시장은 개인보다 훨씬 빠르다. 여러 자산에 미리 나눠 담아두고("어항을 여러 개 놓기") 기다리는 게 낫다.</b>
+            <span class="detail">시장 반응 속도는 알고리즘·글로벌 참여자 증가로 20년 전보다 3~4배 빨라짐 — 뉴스를 보고 쫓아가는 매매(샀다 팔았다)는 답이 없음. 환율도 마찬가지: 전 세계 수십억 참여자가 평가하는 값이라 방향을 맞추는 게 극히 어려움. 미리 분산해두면 예상 못 한 시나리오(예: 유럽 방위비 확대로 유럽 증시 상승)도 놓치지 않게 됨.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>ETF를 고를 때도 성격이 다른 것들로 섞어서 "초분산"하라 — 축구팀처럼 공격수만 있으면 안 되고 수비수·골키퍼(안정 자산)도 필요하다.</b>
+            <span class="detail">주식 ETF뿐 아니라 채권·환율 관련 ETF 등 서로 다른 성격의 자산을 나눠 담는 것. ETF 하나가 이미 여러 종목의 분산이므로, 여러 ETF를 섞으면 분산의 분산(초분산)이 됨.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>실제 투자 전에 소액(1만~5만원)으로 1~2년 정도 "연습 사이클"을 거쳐라 — 큰돈으로 바로 시작하면 실수의 비용이 너무 크다.</b>
+            <span class="detail">투자와 먼저 "친해지기": 돈을 넣기 전에 여러 ETF의 흐름을 관찰하고, 실제로는 소액만 넣어 손실·수익을 직접 체감. 왜 오르고 왜 내렸는지 일지를 써보는 것도 좋은 습관. 이 연습 없이 큰 금액을 바로 넣으면 작은 실수도 큰 손실로 이어짐.</span>
+            <span class="badge">1회 확인</span>
+          </li>
+          <li><b>금(Gold)을 포트폴리오에 소량 담아두는 것도 고려하라 — 지정학적 리스크와 화폐가치 하락에 대한 헤지 역할을 한다.</b>
+            <span class="detail">금 자체의 가치가 오른다기보다, 화폐 공급이 늘어나며 화폐 가치가 떨어지는 것에 가까움. 화폐 공급 증가 속도와 미국 경제 강도(강할수록 금 매력 감소)를 함께 보면 방향을 가늠하는 데 도움됨. 대박을 노리는 자산이 아니라 위기 시 다른 자산이 흔들릴 때 완충 역할을 하는 "보험성 자산".</span>
+            <span class="badge">1회 확인</span>
           </li>
           <li><b>ETF는 아무거나 고르지 말고 3가지만 확인하라: 운용규모(1조원 이상), 거래대금(많을수록 나중에 팔기 쉬움), 총보수(0.02~0.2% 수준).</b>
             <span class="detail">같은 S&amp;P500을 따라가는 ETF라도 운용사(예: TIGER·KODEX·ACE·RISE)별로 이 3가지가 조금씩 다름. 수수료는 운용사끼리 경쟁하면서 매달 바뀌기도 하니, 매번 제일 싼 곳 쫓아다니며 갈아타지 말고 오래 유지하기 편한 곳 하나로 정착하는 게 낫다(갈아탈 때마다 매매수수료가 더 나감).</span>
@@ -860,12 +910,16 @@
     </details>
 
     <details class="category">
-      <summary>부동산 <span class="n">(1)</span><span class="chev">▸</span></summary>
+      <summary>부동산 <span class="n">(2)</span><span class="chev">▸</span></summary>
       <div class="cat-body">
         <ul class="points">
           <li><b>안정적인 내 집(베이스캠프)을 먼저 마련하고, 그다음에 대출(레버리지)을 활용하라.</b>
             <span class="detail">현금도 소득도 불안정한 상태에서 대출 풀로 당겨 여러 채 사는 건 도박. 순서가 실력보다 중요.</span>
             <span class="badge">1회 확인 · 지금 자산 규모(1,000만원 미만)에서는 우선순위 낮음</span>
+          </li>
+          <li><b>실거주 목적의 내 집 마련 1채는 중요한 재무 목표지만, 대출 낀 투자 목적 부동산("영끌")은 금리 민감도가 높고 심리적 압박이 커서 좋은 자산을 사고도 실수하기 쉽다.</b>
+            <span class="detail">이자는 매달 꾸준히 나가는데 가격이 옆으로만 기어도 부담이 커짐 — 계속 오르지 않으면 심리적으로 버티기 힘든 구조. 주식과 달리 실거주 부동산은 "오늘 얼마 올랐다"는 감각 없이 무덤덤하게 오래 보유하게 되는 경향도 있음(이게 오히려 장점).</span>
+            <span class="badge">1회 확인</span>
           </li>
         </ul>
       </div>
@@ -1395,7 +1449,7 @@ function setMoneyVal(id, num) {
 /* ===================== 클라우드 동기화 (Supabase) ===================== */
 const SUPABASE_URL = "https://ckecoqxwoofdwowvexce.supabase.co";
 const SUPABASE_KEY = "sb_publishable_R8mNY01F0WNzeCvKuPF4EQ_9FD7D5Fm";
-const CLOUD_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "ledger_portfolio_v1", "income_pipeline_v1", "action_log_v1", "balance_sheet_v1"];
+const CLOUD_KEYS = ["knowledge_todos_v1", "knowledge_situation_v2", "goal_rate_sim_v1", "ledger_portfolio_v1", "income_pipeline_v1", "action_log_v1", "balance_sheet_v1"];
 
 async function cloudGet(id) {
   try {
@@ -1599,6 +1653,158 @@ function initKnowledgeSituation() {
       <ol>${steps.map(s => `<li>${s}</li>`).join("")}</ol>
 
       <div class="calc-note">계산 근거: 저축률 30%+ · 비상금 3개월치 · 리스크 성향별 배분 비율 · "경험 없으면 ETF 1종목부터" — 모두 위 카테고리에 정리된 원칙을 그대로 적용했습니다. 실제 매수·계좌 개설은 직접 진행해주세요. 전문 자문이 아닙니다.</div>
+    `;
+    result.classList.add("show");
+  });
+}
+
+const GOAL_RATE_BANDS = [
+  {
+    max: 3, name: "현금성·예적금 중심 (초안정형)",
+    mix: { "현금성": 80, "채권": 20 },
+    tips: [
+      "원금 보장이 최우선일 때의 배분이에요. 다만 물가상승률을 못 이길 수 있다는 점은 감안하세요.",
+      "예적금 만기를 분산해서(파킹통장+정기예금 섞기) 필요할 때 바로 뺄 수 있게 해두세요."
+    ]
+  },
+  {
+    max: 6, name: "채권 중심 안정형",
+    mix: { "채권": 50, "ETF": 30, "현금성": 20 },
+    tips: [
+      "안정형 배분(ETF 45%·주식 10%·코인 5%·채권 30%·현금성 10%)에 가까운 구간이에요.",
+      "국채/채권 ETF로 변동성을 낮추고, ETF 비중은 S&P500처럼 넓게 분산된 것 위주로 담으세요."
+    ]
+  },
+  {
+    max: 10, name: "S&P500 ETF 중심 (중립형)",
+    mix: { "ETF": 60, "주식": 20, "채권": 15, "현금성": 5 },
+    tips: [
+      "S&P500 장기 평균(약 10~16%)에 가장 가까운 현실적인 구간이에요. 정립식(매달 같은 날 같은 금액)으로 매수하세요.",
+      "최소 1년 이상 보유를 기본으로 하고, 뉴스나 단기 등락에 흔들려 배분을 자주 바꾸지 마세요."
+    ]
+  },
+  {
+    max: 14, name: "나스닥100 섞은 성장형",
+    mix: { "ETF": 50, "주식": 30, "코인": 15, "현금성": 5 },
+    tips: [
+      "나스닥100(약 13~18%) 비중을 늘리는 구간이라 변동성도 함께 커집니다 — 손절 -10%, 추적손절 10% 원칙을 꼭 지키세요.",
+      "보유 종목은 3~5개 이내로 집중하고 매매일지를 남겨서 감정매매를 줄이세요."
+    ]
+  },
+  {
+    max: 20, name: "공격형 (개별 성장주 + 코인 비중 확대)",
+    mix: { "주식": 45, "코인": 25, "ETF": 25, "현금성": 5 },
+    tips: [
+      "손실회피본능 때문에 벌 때는 5~10%에 팔고 잃을 때는 50%씩 잃는 패턴에 빠지기 쉬운 구간이에요. 손절 기준을 미리 정해두고 기계적으로 지키세요.",
+      "레버리지·선물 같은 고위험 상품은 이 구간에서도 원칙적으로 피하세요.",
+      "실제로 이 수익률을 매년 꾸준히 내는 건 매우 드뭅니다 — 소액으로 먼저 연습 기간을 거치세요."
+    ]
+  },
+  {
+    max: Infinity, name: "⚠ 비현실적 목표 구간",
+    mix: { "주식": 45, "코인": 25, "ETF": 25, "현금성": 5 },
+    warn: true,
+    tips: [
+      "워런 버핏의 평생 평균 수익률이 약 20%였다는 걸 감안하면, 이 이상을 장기간 '꾸준히' 내는 건 현실적으로 거의 불가능해요.",
+      "이 구간을 목표로 잡으면 무리한 레버리지·몰빵으로 이어지기 쉽습니다. 목표 수익률을 낮추거나, 투자 기간을 늘리거나, 월 투자금액을 늘리는 쪽을 먼저 검토하세요."
+    ]
+  }
+];
+
+function initGoalRateSim() {
+  const btn = document.getElementById("grBtnCalc");
+  if (!btn) return;
+  const KEY = "goal_rate_sim_v1";
+  const won = n => "₩" + Math.round(n).toLocaleString("ko-KR");
+  const CHECKPOINTS = [1, 3, 5, 10, 15, 20, 25, 30];
+
+  initMoneyInputs(document.getElementById("view-kn"));
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY)) || {};
+    if (saved.rate != null) document.getElementById("grTargetRate").value = saved.rate;
+    if (saved.monthly != null) setMoneyVal("grMonthly", saved.monthly);
+    if (saved.start != null) setMoneyVal("grStart", saved.start);
+  } catch (e) {}
+
+  function futureValue(rate, monthly, start, years) {
+    const r = rate / 100 / 12;
+    const n = years * 12;
+    if (Math.abs(r) < 1e-9) return start + monthly * n;
+    return start * Math.pow(1 + r, n) + monthly * ((Math.pow(1 + r, n) - 1) / r);
+  }
+
+  btn.addEventListener("click", () => {
+    const rate = Number(document.getElementById("grTargetRate").value);
+    const monthly = moneyVal("grMonthly");
+    const start = moneyVal("grStart");
+    const result = document.getElementById("grResult");
+
+    if (!rate || rate <= 0) {
+      result.innerHTML = "<p>목표 연평균 수익률을 먼저 입력해주세요.</p>";
+      result.classList.add("show");
+      return;
+    }
+
+    localStorage.setItem(KEY, JSON.stringify({ rate, monthly, start }));
+    cloudSaveKey(KEY);
+
+    const band = GOAL_RATE_BANDS.find(b => rate <= b.max);
+    const mixRows = ASSET_ORDER.concat(["기타"]).map(k => ({ key: k, pct: band.mix[k] || 0 })).filter(r => r.pct > 0);
+    const allocRows = mixRows.map(r => `
+      <div class="alloc-mini-row">
+        <div>${r.key}</div>
+        <div class="alloc-mini-track"><div class="alloc-mini-fill" style="width:${r.pct}%"></div></div>
+        <div class="num" style="text-align:right;">${r.pct}%</div>
+      </div>
+    `).join("");
+
+    const rows = CHECKPOINTS.map(y => {
+      const principal = start + monthly * 12 * y;
+      const value = futureValue(rate, monthly, start, y);
+      const gainPct = principal > 0 ? ((value - principal) / principal) * 100 : 0;
+      return { y, principal, value, gainPct };
+    });
+
+    const tableRows = rows.map(r => `
+      <tr><td>${r.y}년차</td><td>${won(r.principal)}</td><td>${won(r.value)}</td><td>${r.gainPct >= 0 ? "+" : ""}${r.gainPct.toFixed(0)}%</td></tr>
+    `).join("");
+
+    const maxYear = CHECKPOINTS[CHECKPOINTS.length - 1];
+    const curve = [];
+    for (let y = 0; y <= maxYear; y++) curve.push({ y, value: futureValue(rate, monthly, start, y), principal: start + monthly * 12 * y });
+    const maxVal = Math.max(...curve.map(p => p.value), 1);
+    const W = 600, H = 200, PAD = 8;
+    const xOf = y => PAD + (y / maxYear) * (W - PAD * 2);
+    const yOf = v => H - PAD - (v / maxVal) * (H - PAD * 2);
+    const valuePath = curve.map(p => `${xOf(p.y).toFixed(1)},${yOf(p.value).toFixed(1)}`).join(" ");
+    const principalPath = curve.map(p => `${xOf(p.y).toFixed(1)},${yOf(p.principal).toFixed(1)}`).join(" ");
+
+    result.innerHTML = `
+      <h3>목표 ${rate}% 달성 전략</h3>
+      <div class="gr-band-name${band.warn ? " gr-band-warn" : ""}">${band.name}</div>
+
+      <h4>추천 배분</h4>
+      ${allocRows}
+
+      <h4>대응 전략</h4>
+      <ul class="gr-tips">${band.tips.map(t => `<li>${t}</li>`).join("")}</ul>
+
+      <h4>연차별 예상 (월 ${won(monthly)}씩 납입 가정)</h4>
+      <table class="gr-table">
+        <tr><th>연차</th><th>누적 원금</th><th>예상 평가액</th><th>누적 수익률</th></tr>
+        ${tableRows}
+      </table>
+
+      <div class="gr-chart-wrap">
+        <svg viewBox="0 0 ${W} ${H}">
+          <polyline points="${principalPath}" fill="none" stroke="var(--ink-muted)" stroke-width="2" stroke-dasharray="4 3" />
+          <polyline points="${valuePath}" fill="none" stroke="var(--accent)" stroke-width="2.5" />
+        </svg>
+      </div>
+      <div class="calc-note">실선(굵은색)=예상 평가액, 점선=납입 원금. ${maxYear}년 기준 매달 ${won(monthly)}씩 연 ${rate}%로 굴렸을 때의 그래프입니다.</div>
+
+      <div class="calc-note">계산 근거: 자산군별 장기 평균 수익률(S&amp;P500 약 10~16%, 나스닥100 약 13~18%, 채권 약 3~4%, 현금성 약 2~3%)을 기준으로 목표 수익률에 가장 가까운 배분을 골랐습니다. 실제 연도별 수익률은 이보다 훨씬 크게 출렁이며, 이 계산은 매년 같은 수익률이 반복된다고 가정한 장기 평균 시뮬레이션일 뿐 보장이 아닙니다. 전문 자문이 아닙니다.</div>
     `;
     result.classList.add("show");
   });
@@ -2563,6 +2769,7 @@ function initPipeline() {
   setSyncIndicator("synced");
   initKnowledgeTodos();
   initKnowledgeSituation();
+  initGoalRateSim();
   initPortfolio();
   initPipeline();
   initActions();
